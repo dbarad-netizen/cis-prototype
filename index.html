@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creative Intelligence System — Connected Synthesis Demo</title>
+<style>
+  :root{
+    --bg:#0c0e14; --panel:#151823; --panel2:#1c2030; --line:#2a3042;
+    --txt:#e8ebf2; --muted:#9aa3b8; --dim:#6b7488;
+    --accent:#6ea8fe; --good:#38d39f; --warn:#f6c544; --bad:#f06a6a; --test:#b98cf0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;font-size:14px}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+  header h1{font-size:22px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{color:var(--muted);margin:0 0 22px;max-width:800px}
+  .tag{display:inline-block;font-size:11px;color:var(--accent);border:1px solid var(--line);
+    border-radius:20px;padding:2px 10px;margin-bottom:14px;letter-spacing:.4px;text-transform:uppercase}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:880px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+    margin:0 0 14px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .selects{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+  .selwrap{flex:1;min-width:200px}
+  .selwrap label{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+  select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:9px;padding:9px 10px;font-size:13px;appearance:none;cursor:pointer}
+  .hint{font-size:11px;color:var(--dim);margin-top:6px}
+  .btn{background:var(--accent);color:#0c0e14;border:none;border-radius:9px;padding:10px 14px;
+    font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .btn:active{transform:translateY(1px)}
+  /* connectors */
+  .conn{border:1px solid var(--line);border-radius:11px;padding:0;margin-bottom:10px;overflow:hidden;
+    transition:border-color .3s,background .3s}
+  .conn:last-child{margin-bottom:0}
+  .conn.connected{border-color:rgba(56,211,159,.4);background:rgba(56,211,159,.04)}
+  .conn.connecting{border-color:rgba(110,168,254,.5)}
+  .conn-top{display:flex;align-items:center;gap:12px;padding:12px 13px}
+  .clogo{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;font-weight:700;font-size:13px;color:#0c0e14}
+  .cmeta{flex:1;min-width:0}
+  .csrc{font-weight:600;font-size:13px}
+  .cdom{font-size:11px;color:var(--dim)}
+  .cstatus{font-size:11px;margin-top:3px;color:var(--muted);min-height:14px}
+  .cstatus .pulled{color:var(--good)}
+  .cright{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .cbtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
+    padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;min-width:86px;text-align:center}
+  .cbtn.connected{background:transparent;color:var(--good);border-color:rgba(56,211,159,.4)}
+  .cbtn:disabled{opacity:.6;cursor:default}
+  .inspToggle{font-size:11px;color:var(--accent);cursor:pointer;user-select:none}
+  .inspToggle.hidden{display:none}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--line);
+    border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px;margin-right:5px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  /* inspect panel */
+  .inspect{border-top:1px solid var(--line);background:#0e1119;padding:0 13px;max-height:0;overflow:hidden;
+    transition:max-height .35s ease,padding .35s ease}
+  .inspect.open{max-height:760px;padding:13px}
+  .ispH{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);margin:0 0 7px}
+  .ispH:not(:first-child){margin-top:14px}
+  .raw{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);
+    background:#0a0c12;border:1px solid var(--line);border-radius:7px;padding:9px 11px;white-space:pre-wrap;line-height:1.6}
+  .raw .k{color:#7fa6d6}.raw .v{color:#cfe0a0}
+  .normrow{display:grid;grid-template-columns:1.2fr 1fr auto auto;gap:8px;align-items:center;
+    font-size:11.5px;padding:4px 0;border-top:1px solid #1a1e2b}
+  .normrow:first-of-type{border-top:none}
+  .normrow .nl{color:var(--txt)} .normrow .nr{color:var(--dim);font-family:ui-monospace,monospace}
+  .normrow .nv{font-variant-numeric:tabular-nums;color:var(--accent);text-align:right;font-weight:600}
+  .normrow .nw{color:var(--dim);font-size:10.5px;text-align:right}
+  .normtot{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;
+    border-top:1px solid var(--line);padding-top:8px;font-size:12px}
+  .normtot b{font-size:16px;font-variant-numeric:tabular-nums}
+  /* coverage + override */
+  .cov{margin-left:auto;font-size:11px;color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0}
+  .cov b{color:var(--txt);font-variant-numeric:tabular-nums}
+  .ovr{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .ovr summary{cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);list-style:none;user-select:none}
+  .ovr summary::-webkit-details-marker{display:none}
+  .ovr summary::before{content:"▸ ";color:var(--dim)} .ovr[open] summary::before{content:"▾ "}
+  .domain{margin:14px 0 0}
+  .drow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .dname{font-weight:600;font-size:12px} .dval{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
+  .dval.off{color:var(--dim)}
+  input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:5px;background:var(--line);outline:none;margin:3px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--accent);cursor:pointer;border:2px solid #0c0e14}
+  input[type=range]:disabled::-webkit-slider-thumb{background:var(--dim);cursor:not-allowed}
+  /* funnel */
+  .funnel{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .fstage{position:relative;background:var(--panel2);border-radius:8px;height:34px;overflow:hidden;border:1px solid var(--line)}
+  .fbar{position:absolute;top:0;left:0;height:100%;border-radius:7px;transition:width .5s ease, background .3s}
+  .flabel{position:absolute;top:0;left:10px;height:100%;display:flex;align-items:center;font-size:12px;font-weight:600;z-index:2;color:#fff;mix-blend-mode:luminosity}
+  .fscore{position:absolute;top:0;right:10px;height:100%;display:flex;align-items:center;font-size:11px;z-index:2;font-variant-numeric:tabular-nums;color:var(--txt)}
+  .fstage.empty{border-style:dashed;opacity:.6} .fstage.empty .flabel{color:var(--dim)}
+  .bottleneck{outline:2px solid var(--warn);outline-offset:1px}
+  .blnote{font-size:11px;color:var(--warn);margin-top:8px;min-height:14px}
+  /* recommendation */
+  #recCard{transition:border-color .3s}
+  .recHead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .recBadge{font-size:13px;font-weight:700;letter-spacing:.5px;padding:5px 13px;border-radius:8px;text-transform:uppercase}
+  .recScore{margin-left:auto;text-align:right} .recScore b{font-size:26px;font-variant-numeric:tabular-nums}
+  .recScore span{font-size:11px;color:var(--dim);display:block}
+  .recHeadline{font-size:16px;font-weight:600;margin:10px 0 4px;letter-spacing:-.2px}
+  .confbar{height:6px;border-radius:6px;background:var(--line);margin:12px 0 4px;overflow:hidden}
+  .conffill{height:100%;border-radius:6px;transition:width .4s}
+  .why{margin-top:14px} .why h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:0 0 8px}
+  .why ul{margin:0;padding:0;list-style:none}
+  .why li{padding:7px 0 7px 20px;position:relative;border-top:1px solid var(--line);font-size:13px}
+  .why li:first-child{border-top:none}
+  .why li::before{content:"";position:absolute;left:2px;top:13px;width:7px;height:7px;border-radius:50%}
+  .why li.pos::before{background:var(--good)} .why li.neg::before{background:var(--bad)}
+  .why li.neu::before{background:var(--dim)} .why li.flag::before{background:var(--warn)}
+  .missing{margin-top:14px;background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:11px 13px}
+  .missing h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--warn);margin:0 0 6px}
+  .missing p{margin:0;font-size:12px;color:var(--muted)}
+  .weights{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .wchip{font-size:11px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--muted)}
+  .wchip b{color:var(--txt);font-variant-numeric:tabular-nums}
+  /* calibration inputs */
+  .normrow .nw{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+  .wIn{width:50px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:5px;
+    padding:2px 5px;font-size:11px;text-align:right;font-variant-numeric:tabular-nums}
+  .wIn:focus{outline:1px solid var(--accent)}
+  .eff{font-size:9.5px;color:var(--dim)}
+  .reCalib{font-size:11px;color:var(--accent);cursor:pointer;user-select:none}
+  /* portfolio table */
+  .ptable{width:100%;border-collapse:collapse;font-size:12px}
+  .ptable th{text-align:left;color:var(--dim);font-weight:600;text-transform:uppercase;font-size:10px;
+    letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .ptable td{padding:9px 10px;border-bottom:1px solid #1a1e2b;font-variant-numeric:tabular-nums}
+  .ptable tr:last-child td{border-bottom:none}
+  .ptable td.name{font-weight:600;font-variant-numeric:normal;white-space:nowrap}
+  .ptable .cell{display:inline-block;min-width:30px;text-align:center;border-radius:5px;padding:2px 6px;font-weight:600}
+  .pbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;text-transform:uppercase;white-space:nowrap}
+  footer{color:var(--dim);font-size:11px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
+  .full{grid-column:1/-1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="tag">Working Prototype · Connectors + Normalization</span>
+    <h1>Creative Intelligence System</h1>
+    <p>CIS connects to the tools that already generate signals, <b>normalizes their native metrics onto a common
+       0–100 scale</b>, then synthesizes everything into one explainable recommendation. Connect a source and click
+       <b>inspect</b> to see the raw API payload and the exact normalization math — that translation layer is the
+       hard part, and the moat.</p>
+  </header>
+
+  <div class="selects">
+    <div class="selwrap">
+      <label>Demo dataset (what the live pull returns)</label>
+      <select id="dataset"></select>
+      <div class="hint" id="dsHint"></div>
+    </div>
+    <div class="selwrap" style="flex:0 0 auto"><button class="btn" id="connectAll">⚡ Connect all sources</button></div>
+    <div class="selwrap" style="flex:0 0 auto"><button class="btn ghost" id="disconnectAll">Reset</button></div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: CONNECTORS -->
+    <div class="card">
+      <h2>Connected Data Sources <span class="cov">coverage <b id="covTxt">0/5</b></span></h2>
+      <div id="connectors"></div>
+      <details class="ovr">
+        <summary>Manual override</summary>
+        <div id="domains"></div>
+        <div class="domain">
+          <div class="drow"><span class="dname">Media spend level</span><span class="dval" id="spendVal">55</span></div>
+          <input type="range" id="spend" min="0" max="100" value="55">
+        </div>
+      </details>
+    </div>
+
+    <!-- RIGHT: RECOMMENDATION -->
+    <div class="card" id="recCard">
+      <h2>Synthesized Recommendation</h2>
+      <div class="recHead">
+        <span class="recBadge" id="recBadge">—</span>
+        <div class="recScore"><b id="cisScore">—</b><span>CIS composite</span></div>
+      </div>
+      <div class="recHeadline" id="recHeadline">Connect data sources to begin.</div>
+      <div class="confbar"><div class="conffill" id="confFill" style="width:0"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim)">
+        <span>Confidence (evidence quality)</span><span id="confTxt">—</span>
+      </div>
+      <div class="why"><h3>Why this recommendation — evidence trace</h3><ul id="whyList"></ul></div>
+      <div class="missing"><h3>What we're missing</h3><p id="missingTxt">No sources connected yet.</p></div>
+    </div>
+
+    <!-- FUNNEL -->
+    <div class="card full">
+      <h2>Intelligence Funnel — where the signal breaks down</h2>
+      <div class="funnel" id="funnel"></div>
+      <div class="blnote" id="blNote"></div>
+      <div style="margin-top:14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:7px">
+          Active domain weights (set by market context)</div>
+        <div class="weights" id="weightChips"></div>
+        <div class="selwrap" style="margin-top:12px;max-width:320px">
+          <label>Market context (dynamic weighting)</label>
+          <select id="market"></select>
+          <div class="hint" id="marketHint"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORTFOLIO -->
+    <div class="card full">
+      <h2>Campaign Portfolio <span class="cov">all sources connected · live</span></h2>
+      <div style="overflow-x:auto"><table class="ptable" id="ptable"></table></div>
+      <div class="hint" style="margin-top:10px">Every campaign re-scored live from its raw signals through the
+        current normalization weights and market context. Edit a weight in any inspect panel above, or switch market
+        context, and watch the whole book shift — that's the calibration layer doing its job.</div>
+    </div>
+  </div>
+
+  <footer>
+    Connectors are simulated — "Connect" mimics OAuth + sync and returns the demo dataset's raw payload, which the
+    engine normalizes in-browser. The normalization weights shown in each inspect panel are illustrative; in
+    production they'd be calibrated per source and revisited as methodologies change. Everything downstream —
+    composite scoring, confidence weighting, funnel bottleneck detection, recommendation — is fully live here.
+  </footer>
+</div>
+
+<script>
+const c1=x=>Math.max(0,Math.min(100,x)), R=Math.round;
+
+// ---------- Domains & source tools ----------
+const DOMAINS=[
+  {key:'context',  name:'Context Intelligence',  src:'Peer39',      cat:'Contextual',       logo:'#7a8cff'},
+  {key:'attention',name:'Attention Intelligence', src:'Adelaide',    cat:'Attention (AU)',   logo:'#6ea8fe'},
+  {key:'creative', name:'Creative Intelligence',  src:'System1',     cat:'Creative testing', logo:'#b98cf0'},
+  {key:'behavioral',name:'Behavioral Intelligence',src:'GA4 + Search',cat:'Web behavior',    logo:'#38d39f'},
+  {key:'business', name:'Business Intelligence',   src:'Snowflake',  cat:'Revenue warehouse',logo:'#f6c544'},
+];
+
+// ---------- Normalization spec: native metric -> 0-100 ----------
+const SPEC={
+  context:{
+    score:[
+      {l:'Adjacency fit',   w:0.40, n:p=>c1(p.adjacencyFitPct),                 r:p=>p.adjacencyFitPct+'%'},
+      {l:'Seasonality fit', w:0.25, n:p=>c1(p.seasonalityFitPct),               r:p=>p.seasonalityFitPct+'%'},
+      {l:'Brand safety',    w:0.20, n:p=>c1(p.brandSafePct),                    r:p=>p.brandSafePct+'%'},
+      {l:'Comp. clutter',   w:0.15, n:p=>c1(100-p.competitorAdsNearby*8),       r:p=>p.competitorAdsNearby+' rival ads'},
+    ],
+    conf:[
+      {l:'Coverage', w:0.6, n:p=>c1(p.measuredCoveragePct), r:p=>p.measuredCoveragePct+'% measured'},
+      {l:'Recency',  w:0.4, n:p=>c1(100-p.recencyDays*3),   r:p=>p.recencyDays+'d ago'},
+    ]},
+  attention:{
+    score:[
+      {l:'AU index',     w:0.50, n:p=>c1((p.auIndex-60)/80*100),     r:p=>p.auIndex+' vs 100'},
+      {l:'Viewability',  w:0.30, n:p=>c1(p.viewabilityPct),          r:p=>p.viewabilityPct+'%'},
+      {l:'Time in view', w:0.20, n:p=>c1(p.timeInViewSec/5*100),     r:p=>p.timeInViewSec+'s'},
+    ],
+    conf:[
+      {l:'Sample size', w:0.6, n:p=>c1(p.sampleImpressions/2e6*100), r:p=>(p.sampleImpressions/1e6).toFixed(2)+'M impr'},
+      {l:'Recency',     w:0.4, n:p=>c1(100-p.recencyDays*3),         r:p=>p.recencyDays+'d ago'},
+    ]},
+  creative:{
+    score:[
+      {l:'Star rating',    w:0.40, n:p=>c1((p.starRating-1)/4.9*100), r:p=>p.starRating+'/5.9'},
+      {l:'Strong emotion', w:0.25, n:p=>c1(p.emotionStrongPct),       r:p=>p.emotionStrongPct+'%'},
+      {l:'Brand recall',   w:0.20, n:p=>c1(p.brandRecallPct),         r:p=>p.brandRecallPct+'%'},
+      {l:'Distinctiveness',w:0.15, n:p=>c1(p.distinctivenessPct),     r:p=>p.distinctivenessPct+'%'},
+    ],
+    conf:[
+      {l:'Panel size', w:0.6, n:p=>c1(p.panelSize/200*100), r:p=>'n='+p.panelSize},
+      {l:'Recency',    w:0.4, n:p=>c1(100-p.recencyDays*2), r:p=>p.recencyDays+'d ago'},
+    ]},
+  behavioral:{
+    score:[
+      {l:'Conversion rate', w:0.40, n:p=>c1(p.conversionRatePct/8*100), r:p=>p.conversionRatePct+'%'},
+      {l:'Search lift',     w:0.25, n:p=>c1(p.searchLiftPct/50*100),    r:p=>'+'+p.searchLiftPct+'%'},
+      {l:'Sessions lift',   w:0.20, n:p=>c1(p.sessionsLiftPct/40*100),  r:p=>'+'+p.sessionsLiftPct+'%'},
+      {l:'Return visitors', w:0.15, n:p=>c1(p.returnVisitorPct*2),      r:p=>p.returnVisitorPct+'%'},
+    ],
+    conf:[
+      {l:'Tagged events', w:0.6, n:p=>c1(p.taggedEvents/1e5*100), r:p=>(p.taggedEvents/1000).toFixed(0)+'k events'},
+      {l:'Data gaps',     w:0.4, n:p=>c1(100-p.dataGapPct*2),     r:p=>p.dataGapPct+'% gaps'},
+    ]},
+  business:{
+    score:[
+      {l:'Revenue vs plan', w:0.45, n:p=>c1(p.revenueVsPlanPct),     r:p=>p.revenueVsPlanPct+'% of plan'},
+      {l:'LTV : CAC',       w:0.30, n:p=>c1(p.ltvCacRatio/4*100),    r:p=>p.ltvCacRatio+':1'},
+      {l:'CAC vs target',   w:0.25, n:p=>c1(p.cacVsTargetPct),       r:p=>p.cacVsTargetPct+'% of target'},
+    ],
+    conf:[
+      {l:'Model confidence', w:0.7, n:p=>c1(p.modelConfidencePct), r:p=>p.modelConfidencePct+'%'},
+      {l:'Recency',          w:0.3, n:p=>c1(100-p.recencyDays*2),  r:p=>p.recencyDays+'d ago'},
+    ]},
+};
+const ALL=DOMAINS.map(d=>d.key);
+// Calibration: editable score-component weights per domain (defaults from SPEC)
+const CALIB={};
+DOMAINS.forEach(d=>CALIB[d.key]=SPEC[d.key].score.map(c=>c.w));
+function effW(dom){const raw=CALIB[dom];const sum=raw.reduce((a,b)=>a+b,0)||1;return raw.map(x=>x/sum);}
+function normalize(dom,p){
+  const sp=SPEC[dom], ew=effW(dom);
+  const s=R(sp.score.reduce((a,c,i)=>a+ew[i]*c.n(p),0));
+  const c=R(sp.conf.reduce((a,c)=>a+c.w*c.n(p),0));
+  return {s:c1(s),c:c1(c)};
+}
+
+const MARKETS={
+  balanced:{label:'Balanced (default)',hint:'Equal emphasis across domains.',w:{context:1,attention:1,creative:1,behavioral:1,business:1}},
+  brand:{label:'Brand-building phase',hint:'Upper-funnel matters more; outcomes lag.',w:{context:1.3,attention:1.3,creative:1.5,behavioral:0.7,business:0.6}},
+  performance:{label:'Performance / Q4 push',hint:'Outcomes dominate; brand signals discounted.',w:{context:0.7,attention:0.9,creative:0.9,behavioral:1.5,business:1.6}},
+  launch:{label:'New product launch',hint:'Attention + distinctiveness drive early success.',w:{context:1.1,attention:1.4,creative:1.4,behavioral:1.0,business:0.8}},
+  downturn:{label:'Efficiency / downturn',hint:'Every dollar must show business return.',w:{context:0.8,attention:0.8,creative:0.9,behavioral:1.2,business:1.7}},
+};
+
+// ---------- Demo datasets: RAW payloads the connectors "pull" ----------
+const RAW={"working":{"context":{"adjacencyFitPct":74,"seasonalityFitPct":56,"brandSafePct":77,"competitorAdsNearby":5,"measuredCoveragePct":80,"recencyDays":7},"attention":{"auIndex":127,"viewabilityPct":54,"timeInViewSec":4,"sampleImpressions":1700000,"recencyDays":5},"creative":{"starRating":5.1,"emotionStrongPct":55,"brandRecallPct":79,"distinctivenessPct":55,"panelSize":150,"recencyDays":13},"behavioral":{"conversionRatePct":6.88,"searchLiftPct":33,"sessionsLiftPct":34,"returnVisitorPct":35,"taggedEvents":88000,"dataGapPct":6},"business":{"revenueVsPlanPct":82,"ltvCacRatio":2.5,"cacVsTargetPct":82,"modelConfidencePct":82,"recencyDays":9}},"unseen":{"context":{"adjacencyFitPct":44,"seasonalityFitPct":26,"brandSafePct":47,"competitorAdsNearby":9,"measuredCoveragePct":70,"recencyDays":10},"attention":{"auIndex":95,"viewabilityPct":14,"timeInViewSec":2,"sampleImpressions":1640000,"recencyDays":6},"creative":{"starRating":5.5,"emotionStrongPct":63,"brandRecallPct":87,"distinctivenessPct":63,"panelSize":160,"recencyDays":10},"behavioral":{"conversionRatePct":4.16,"searchLiftPct":16,"sessionsLiftPct":20,"returnVisitorPct":18,"taggedEvents":70000,"dataGapPct":15},"business":{"revenueVsPlanPct":47,"ltvCacRatio":1.1,"cacVsTargetPct":47,"modelConfidencePct":65,"recencyDays":18}},"leaky":{"context":{"adjacencyFitPct":72,"seasonalityFitPct":54,"brandSafePct":75,"competitorAdsNearby":5,"measuredCoveragePct":75,"recencyDays":8},"attention":{"auIndex":132,"viewabilityPct":60,"timeInViewSec":4.3,"sampleImpressions":1700000,"recencyDays":5},"creative":{"starRating":5.3,"emotionStrongPct":59,"brandRecallPct":83,"distinctivenessPct":59,"panelSize":156,"recencyDays":11},"behavioral":{"conversionRatePct":3.52,"searchLiftPct":12,"sessionsLiftPct":17,"returnVisitorPct":14,"taggedEvents":80000,"dataGapPct":10},"business":{"revenueVsPlanPct":39,"ltvCacRatio":0.8,"cacVsTargetPct":39,"modelConfidencePct":78,"recencyDays":11}},"flat":{"context":{"adjacencyFitPct":66,"seasonalityFitPct":48,"brandSafePct":69,"competitorAdsNearby":6,"measuredCoveragePct":70,"recencyDays":10},"attention":{"auIndex":130,"viewabilityPct":58,"timeInViewSec":4.2,"sampleImpressions":1680000,"recencyDays":5},"creative":{"starRating":3.4,"emotionStrongPct":21,"brandRecallPct":45,"distinctivenessPct":21,"panelSize":152,"recencyDays":12},"behavioral":{"conversionRatePct":4.24,"searchLiftPct":17,"sessionsLiftPct":20,"returnVisitorPct":18,"taggedEvents":72000,"dataGapPct":14},"business":{"revenueVsPlanPct":49,"ltvCacRatio":1.2,"cacVsTargetPct":49,"modelConfidencePct":70,"recencyDays":15}},"burning":{"context":{"adjacencyFitPct":54,"seasonalityFitPct":36,"brandSafePct":57,"competitorAdsNearby":8,"measuredCoveragePct":65,"recencyDays":12},"attention":{"auIndex":108,"viewabilityPct":30,"timeInViewSec":2.8,"sampleImpressions":1400000,"recencyDays":10},"creative":{"starRating":3.8,"emotionStrongPct":30,"brandRecallPct":54,"distinctivenessPct":30,"panelSize":136,"recencyDays":16},"behavioral":{"conversionRatePct":3.12,"searchLiftPct":10,"sessionsLiftPct":15,"returnVisitorPct":11,"taggedEvents":75000,"dataGapPct":13},"business":{"revenueVsPlanPct":30,"ltvCacRatio":0.4,"cacVsTargetPct":30,"modelConfidencePct":80,"recencyDays":10}},"fog":{"context":{"adjacencyFitPct":68,"seasonalityFitPct":50,"brandSafePct":71,"competitorAdsNearby":6,"measuredCoveragePct":30,"recencyDays":23},"attention":{"auIndex":114,"viewabilityPct":38,"timeInViewSec":3.2,"sampleImpressions":500000,"recencyDays":25},"creative":{"starRating":4.7,"emotionStrongPct":48,"brandRecallPct":72,"distinctivenessPct":48,"panelSize":70,"recencyDays":33},"behavioral":{"conversionRatePct":5.04,"searchLiftPct":22,"sessionsLiftPct":24,"returnVisitorPct":23,"taggedEvents":28000,"dataGapPct":36},"business":{"revenueVsPlanPct":66,"ltvCacRatio":1.8,"cacVsTargetPct":66,"modelConfidencePct":22,"recencyDays":39}}};
+const DSMETA={
+  working:{label:'Always-on Performance (healthy)',spend:60,hint:'Everything firing → SCALE.'},
+  unseen:{label:'Great creative, nobody sees it',spend:55,hint:'Strong asset, weak attention → fix MEDIA.'},
+  leaky:{label:'Seen & loved, no conversions',spend:65,hint:'Upper funnel strong, downstream collapses → OPTIMIZE conversion.'},
+  flat:{label:'Seen but creative falls flat',spend:50,hint:'High attention, weak creative → TEST new creative.'},
+  burning:{label:'High spend, no return',spend:88,hint:'Money out, nothing back → STOP / reallocate.'},
+  fog:{label:'Promising but low-confidence data',spend:45,hint:'Decent scores, terrible data quality → TEST / instrument.'},
+};
+
+const COLORS={good:'#38d39f',warn:'#f6c544',bad:'#f06a6a',accent:'#6ea8fe',test:'#b98cf0',dim:'#6b7488'};
+const scoreColor=s=>s>=65?COLORS.good:s>=45?COLORS.warn:COLORS.bad;
+
+// ---------- state ----------
+const state={};
+DOMAINS.forEach(d=>state[d.key]={connected:false,s:0,c:0,raw:null,adj:false});
+state.spend=55; let dataset='working';
+
+// ---------- build connectors ----------
+const cWrap=document.getElementById('connectors');
+DOMAINS.forEach(d=>{
+  const row=document.createElement('div');row.className='conn';row.id='conn-'+d.key;
+  row.innerHTML=`
+    <div class="conn-top">
+      <div class="clogo" style="background:${d.logo}">${d.src[0]}</div>
+      <div class="cmeta">
+        <div class="csrc">${d.src} <span style="color:var(--dim);font-weight:400">· ${d.name.replace(' Intelligence','')}</span></div>
+        <div class="cdom">${d.cat}</div>
+        <div class="cstatus" id="status-${d.key}">Not connected</div>
+      </div>
+      <div class="cright">
+        <button class="cbtn" id="cbtn-${d.key}" data-k="${d.key}">Connect</button>
+        <span class="inspToggle hidden" id="ins-${d.key}" data-k="${d.key}">inspect ▸</span>
+      </div>
+    </div>
+    <div class="inspect" id="inspect-${d.key}"></div>`;
+  cWrap.appendChild(row);
+});
+cWrap.querySelectorAll('.cbtn').forEach(b=>b.addEventListener('click',()=>toggleConnect(b.dataset.k)));
+cWrap.querySelectorAll('.inspToggle').forEach(t=>t.addEventListener('click',()=>{
+  const k=t.dataset.k, panel=document.getElementById('inspect-'+k), open=panel.classList.toggle('open');
+  t.textContent= open?'inspect ▾':'inspect ▸';
+}));
+
+// ---------- manual override sliders ----------
+const domEl=document.getElementById('domains');
+DOMAINS.forEach(d=>{
+  const w=document.createElement('div');w.className='domain';
+  w.innerHTML=`<div class="drow"><span class="dname">${d.name}</span><span class="dval off" id="${d.key}-sval">—</span></div>
+    <input type="range" id="${d.key}-s" min="0" max="100" value="0" disabled>`;
+  domEl.appendChild(w);
+});
+DOMAINS.forEach(d=>{
+  document.getElementById(d.key+'-s').addEventListener('input',e=>{
+    if(!state[d.key].connected)return;
+    state[d.key].s=+e.target.value;state[d.key].adj=true;
+    document.getElementById(d.key+'-sval').textContent=state[d.key].s+' (adj)';
+    document.getElementById('status-'+d.key).innerHTML='<span class="pulled">●</span> manually adjusted';
+    compute();
+  });
+});
+document.getElementById('spend').addEventListener('input',e=>{state.spend=+e.target.value;
+  document.getElementById('spendVal').textContent=state.spend;compute();});
+
+// ---------- selects ----------
+const dsSel=document.getElementById('dataset');
+Object.entries(DSMETA).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.label;dsSel.appendChild(o);});
+dsSel.value='working';dsSel.addEventListener('change',()=>{dataset=dsSel.value;
+  document.getElementById('dsHint').textContent=DSMETA[dataset].hint;
+  state.spend=DSMETA[dataset].spend;document.getElementById('spend').value=state.spend;document.getElementById('spendVal').textContent=state.spend;
+  DOMAINS.forEach(d=>{if(state[d.key].connected){state[d.key].adj=false;pull(d.key);}});compute();});
+document.getElementById('dsHint').textContent=DSMETA.working.hint;
+
+const mSel=document.getElementById('market');
+Object.entries(MARKETS).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.label;mSel.appendChild(o);});
+mSel.value='balanced';mSel.addEventListener('change',()=>{document.getElementById('marketHint').textContent=MARKETS[mSel.value].hint;compute();});
+document.getElementById('marketHint').textContent=MARKETS.balanced.hint;
+
+document.getElementById('connectAll').addEventListener('click',()=>{DOMAINS.forEach((d,i)=>{if(!state[d.key].connected)setTimeout(()=>connect(d.key),i*260);});});
+document.getElementById('disconnectAll').addEventListener('click',()=>{DOMAINS.forEach(d=>disconnect(d.key));compute();});
+
+// ---------- connect ----------
+function toggleConnect(k){state[k].connected?disconnect(k):connect(k);if(!state[k].connected)compute();}
+function connect(k){
+  const btn=document.getElementById('cbtn-'+k),st=document.getElementById('status-'+k);
+  document.getElementById('conn-'+k).className='conn connecting';
+  btn.disabled=true;btn.textContent='Syncing';st.innerHTML='<span class="spin"></span>authenticating…';
+  setTimeout(()=>st.innerHTML='<span class="spin"></span>pulling signal…',500);
+  setTimeout(()=>{
+    state[k].connected=true;state[k].adj=false;pull(k);
+    document.getElementById('conn-'+k).className='conn connected';
+    btn.disabled=false;btn.textContent='Connected';btn.className='cbtn connected';
+    document.getElementById('ins-'+k).classList.remove('hidden');
+    document.getElementById(k+'-s').disabled=false;
+    compute();
+  },1000);
+}
+function disconnect(k){
+  state[k]={connected:false,s:0,c:0,raw:null,adj:false};
+  document.getElementById('conn-'+k).className='conn';
+  const btn=document.getElementById('cbtn-'+k);btn.textContent='Connect';btn.className='cbtn';btn.disabled=false;
+  document.getElementById('status-'+k).textContent='Not connected';
+  const ins=document.getElementById('ins-'+k);ins.classList.add('hidden');ins.textContent='inspect ▸';
+  const panel=document.getElementById('inspect-'+k);panel.classList.remove('open');panel.innerHTML='';
+  const sl=document.getElementById(k+'-s');sl.value=0;sl.disabled=true;
+  const sv=document.getElementById(k+'-sval');sv.textContent='—';sv.className='dval off';
+}
+function pull(k){
+  const p=RAW[dataset][k];state[k].raw=p;
+  const {s,c}=normalize(k,p);state[k].s=s;state[k].c=c;
+  const meta=DOMAINS.find(d=>d.key===k);
+  const fresh=c>=50?'synced just now':'stale / low-quality feed';
+  document.getElementById('status-'+k).innerHTML=`<span class="pulled">●</span> normalized to <b>${s}</b>/100 · data quality ${c}% · ${fresh}`;
+  document.getElementById(k+'-s').value=s;
+  const sv=document.getElementById(k+'-sval');sv.textContent=s;sv.className='dval';
+  renderInspect(k);
+}
+
+// ---------- inspect panel ----------
+function renderInspect(k){
+  const p=state[k].raw, sp=SPEC[k], meta=DOMAINS.find(d=>d.key===k), ew=effW(k);
+  const rawLines=Object.entries(p).map(([key,val])=>`<span class="k">${key}</span>: <span class="v">${val}</span>`).join('\n');
+  const srow=(item,i)=>{const nv=R(item.n(p));
+    return `<div class="normrow"><span class="nl">${item.l}</span><span class="nr">${item.r(p)}</span><span class="nv">${nv}</span>`+
+      `<span class="nw"><input type="number" class="wIn" data-k="${k}" data-i="${i}" min="0" max="1" step="0.05" value="${CALIB[k][i]}"><span class="eff">eff ${ew[i].toFixed(2)}</span></span></div>`;};
+  const crow=item=>`<div class="normrow"><span class="nl">${item.l}</span><span class="nr">${item.r(p)}</span><span class="nv">${R(item.n(p))}</span><span class="nw">×${item.w}</span></div>`;
+  const s=R(sp.score.reduce((a,c,i)=>a+ew[i]*c.n(p),0));
+  const c=R(sp.conf.reduce((a,c)=>a+c.w*c.n(p),0));
+  document.getElementById('inspect-'+k).innerHTML=`
+    <p class="ispH">Raw response · ${meta.src} API</p>
+    <div class="raw">${rawLines}</div>
+    <p class="ispH">Calibrate → domain score · edit weights (auto-normalized to sum 1)</p>
+    ${sp.score.map(srow).join('')}
+    <div class="normtot"><span>Normalized domain score</span><b id="stot-${k}" style="color:${scoreColor(s)}">${s} / 100</b></div>
+    <p class="ispH">Confidence (data quality) — fixed mapping</p>
+    ${sp.conf.map(crow).join('')}
+    <div class="normtot"><span>Data-quality confidence</span><b style="color:${scoreColor(c)}">${c}%</b></div>
+    <div style="margin-top:9px"><span class="reCalib" data-k="${k}">↺ reset weights</span></div>`;
+  document.querySelectorAll(`#inspect-${k} .wIn`).forEach(inp=>inp.addEventListener('input',onCalib));
+  const rc=document.querySelector(`#inspect-${k} .reCalib`);
+  if(rc)rc.addEventListener('click',()=>{CALIB[k]=SPEC[k].score.map(c=>c.w);
+    document.querySelectorAll(`#inspect-${k} .wIn`).forEach((inp,i)=>inp.value=CALIB[k][i]);recalibrate(k);});
+}
+function onCalib(e){const k=e.target.dataset.k,i=+e.target.dataset.i;let v=parseFloat(e.target.value);
+  if(isNaN(v)||v<0)v=0;CALIB[k][i]=v;recalibrate(k);}
+function recalibrate(k){
+  const ew=effW(k), sp=SPEC[k], p=state[k].raw;
+  document.querySelectorAll(`#inspect-${k} .eff`).forEach((el,i)=>el.textContent='eff '+ew[i].toFixed(2));
+  if(p){const s=R(sp.score.reduce((a,c,i)=>a+ew[i]*c.n(p),0));
+    const tot=document.getElementById('stot-'+k);if(tot){tot.textContent=s+' / 100';tot.style.color=scoreColor(s);}
+    if(state[k].connected&&!state[k].adj){state[k].s=s;
+      document.getElementById(k+'-s').value=s;
+      const sv=document.getElementById(k+'-sval');sv.textContent=s;sv.className='dval';
+      document.getElementById('status-'+k).innerHTML=`<span class="pulled">●</span> normalized to <b>${s}</b>/100 · data quality ${state[k].c}% · ${state[k].c>=50?'synced just now':'stale / low-quality feed'}`;}}
+  compute();
+}
+
+// ---------- engine ----------
+let funnelBuilt=false;
+// Pure decision function: shared by the live campaign + the portfolio table.
+function decide(S, has, cis, conf, spend, w, connKeys){
+  const avg=ks=>{const a=ks.filter(has);return a.length?a.reduce((s,k)=>s+S(k),0)/a.length:null;};
+  const up=avg(['context','attention','creative']), down=avg(['behavioral','business']);
+  let rec,color,headline;const why=[];const add=(c,t)=>why.push({c,t});
+  if(conf<45){
+    rec='TEST';color=COLORS.test;headline='Data confidence too low to act — instrument before investing.';
+    add('flag',`Connected evidence quality is only ${conf}%. Recommendations would be guesses.`);
+    add('neu','Improve feed quality/recency or sample size before scaling spend.');
+  } else if(has('business')&&has('behavioral')&&S('business')>=65&&S('behavioral')>=60&&cis>=62){
+    rec='SCALE';color=COLORS.good;headline='The full funnel is working — increase investment.';
+    add('pos',`Business outcomes strong (${S('business')}), backed by real behavior (${S('behavioral')}).`);
+    if(has('attention')&&has('creative'))add('pos',`Upper funnel supports it: attention ${S('attention')}, creative ${S('creative')}.`);
+    add('neu','Scale spend/reach; watch for diminishing returns at higher volume.');
+  } else if(has('creative')&&has('attention')&&S('creative')>=60&&S('attention')<48){
+    rec='OPTIMIZE';color=COLORS.accent;headline='Strong creative almost nobody sees — fix media & placement.';
+    add('pos',`Creative quality is high (${S('creative')}) — don't kill it.`);
+    add('neg',`Attention is the bottleneck (${S('attention')}).`);
+    add('neu','Shift to higher-attention placements/formats before touching the asset.');
+  } else if(has('attention')&&has('creative')&&S('attention')>=55&&S('creative')<48){
+    rec='TEST';color=COLORS.test;headline='The audience sees it but the message falls flat — test new creative.';
+    add('pos',`Attention is there (${S('attention')}).`);add('neg',`Creative isn't converting attention into meaning (${S('creative')}).`);
+    add('neu','Run variants on emotion, clarity, and brand linkage.');
+  } else if(up!==null&&down!==null&&up>=58&&down<50){
+    rec='OPTIMIZE';color=COLORS.accent;headline='Creative lands but the outcome leaks — fix the conversion path.';
+    add('pos',`People notice and respond (upstream avg ${R(up)}).`);add('neg',`Behavior/business fall off (downstream avg ${R(down)}).`);
+    add('neu','Look at landing page, offer, targeting — the creative is not the problem.');
+  } else if(has('business')&&S('business')<40&&spend>=70){
+    rec='STOP';color=COLORS.bad;headline='High spend, no return — stop and reallocate the budget.';
+    add('neg',`Business outcome ${S('business')} against spend level ${spend}.`);
+    add('neu','Reallocate to better-performing activity; revisit only with a new hypothesis.');
+  } else {
+    rec='OPTIMIZE';color=COLORS.accent;headline='Mixed signals — optimize the weakest connected link first.';
+    add('neu',`No domain is clearly carrying the campaign (CIS ${cis}).`);
+    const bl=bottleneck(S,connKeys,w);if(bl)add('flag',`Bottleneck: ${nameOf(bl)} (${S(bl)}). Start there.`);
+    add('neu','Make one targeted change and re-measure before scaling.');
+  }
+  if(connKeys.length<5){
+    const miss=DOMAINS.filter(d=>!connKeys.includes(d.key)).map(d=>d.name.replace(' Intelligence',''));
+    add('flag',`Partial coverage (${connKeys.length}/5). Blind to: ${miss.join(', ')}. This could change once those connect.`);
+  }
+  if(mSel.value!=='balanced')add('neu',`Weighted for "${MARKETS[mSel.value].label}".`);
+  return {rec,color,headline,why};
+}
+function composite(scoreOf,confOf,keys,w){
+  let num=0,den=0,cn=0,cd=0;
+  keys.forEach(k=>{const cf=confOf(k)/100,wt=w[k],eff=wt*(0.5+0.5*cf);num+=scoreOf(k)*eff;den+=eff;cn+=cf*wt;cd+=wt;});
+  return {cis:R(num/den),conf:R(100*cn/cd)};
+}
+function compute(){
+  const w=MARKETS[mSel.value].w;
+  const conn=DOMAINS.filter(d=>state[d.key].connected);
+  const connKeys=conn.map(d=>d.key);
+  document.getElementById('covTxt').textContent=conn.length+'/5';
+  renderFunnel();renderWeights(w);renderPortfolio();
+
+  if(conn.length===0){
+    paintRec('—',COLORS.dim,'Connect data sources to begin.',[],0,'—');
+    document.getElementById('missingTxt').textContent='No sources connected. The engine has no evidence yet.';
+    document.getElementById('blNote').textContent='';highlightBottleneck(null);return;
+  }
+  const S=k=>state[k].s, has=k=>state[k].connected;
+  const {cis,conf}=composite(S,k=>state[k].c,connKeys,w);
+  const d=decide(S,has,cis,conf,state.spend,w,connKeys);
+  paintRec(d.rec,d.color,d.headline,d.why,conf,conf+'%');
+  highlightBottleneck(bottleneck(S,connKeys,w));
+
+  const lowq=conn.filter(d=>state[d.key].c<50).map(d=>d.src);
+  const notConn=DOMAINS.filter(d=>!state[d.key].connected).map(d=>`${d.src} (${d.name.replace(' Intelligence','')})`);
+  let msg=[];
+  if(notConn.length)msg.push(`Not connected: ${notConn.join(', ')} — these domains are blind spots.`);
+  if(lowq.length)msg.push(`Low data quality from: ${lowq.join(', ')} — treat as hypotheses.`);
+  if(!msg.length)msg.push('All five sources connected with usable data quality. No major blind spots.');
+  document.getElementById('missingTxt').textContent=msg.join(' ');
+}
+function bottleneck(S,connKeys,w){
+  const order=['context','attention','creative','behavioral','business'].filter(k=>connKeys.includes(k));
+  if(!order.length)return null;
+  let bl=null,worst=-1;
+  order.forEach((k,i)=>{const sc=S(k),up=i>0?S(order[i-1]):sc,drop=Math.max(0,up-sc),pen=(100-sc)*w[k]*0.6+drop*0.8;if(pen>worst){worst=pen;bl=k;}});
+  return bl;
+}
+const nameOf=k=>DOMAINS.find(d=>d.key===k).name;
+const faint=s=>scoreColor(s)+'22';
+
+// ---------- portfolio: every campaign re-scored live ----------
+function renderPortfolio(){
+  const w=MARKETS[mSel.value].w;
+  const cols=['Campaign','Ctx','Att','Cre','Beh','Bus','CIS','Conf','Recommendation'];
+  let html='<tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  Object.keys(RAW).forEach(ds=>{
+    const sc={};ALL.forEach(k=>sc[k]=normalize(k,RAW[ds][k]));
+    const {cis,conf}=composite(k=>sc[k].s,k=>sc[k].c,ALL,w);
+    const d=decide(k=>sc[k].s,()=>true,cis,conf,DSMETA[ds].spend,w,ALL.slice());
+    const cell=k=>`<td><span class="cell" style="background:${faint(sc[k].s)};color:${scoreColor(sc[k].s)}">${sc[k].s}</span></td>`;
+    html+=`<tr><td class="name">${DSMETA[ds].label}</td>`+ALL.map(cell).join('')+
+      `<td><b style="color:${scoreColor(cis)}">${cis}</b></td>`+
+      `<td style="color:${conf<45?COLORS.bad:'var(--muted)'}">${conf}%</td>`+
+      `<td><span class="pbadge" style="background:${d.color};color:#0c0e14">${d.rec}</span></td></tr>`;
+  });
+  document.getElementById('ptable').innerHTML=html;
+}
+
+function paintRec(rec,color,headline,why,conf,confTxt){
+  const cisEl=document.getElementById('cisScore');
+  const conn=DOMAINS.filter(d=>state[d.key].connected);
+  if(conn.length){const w=MARKETS[mSel.value].w;let n=0,dn=0;conn.forEach(d=>{const cf=state[d.key].c/100,e=w[d.key]*(0.5+0.5*cf);n+=state[d.key].s*e;dn+=e;});
+    const v=R(n/dn);cisEl.textContent=v;cisEl.style.color=scoreColor(v);}
+  else{cisEl.textContent='—';cisEl.style.color=COLORS.dim;}
+  const badge=document.getElementById('recBadge');badge.textContent=rec;
+  badge.style.background=color;badge.style.color=rec==='—'?'#fff':'#0c0e14';
+  document.getElementById('recCard').style.borderColor=rec==='—'?'var(--line)':color;
+  document.getElementById('recHeadline').textContent=headline;
+  document.getElementById('confFill').style.width=conf+'%';
+  document.getElementById('confFill').style.background=conf>=65?COLORS.good:conf>=45?COLORS.warn:COLORS.bad;
+  document.getElementById('confTxt').textContent=confTxt;
+  const ul=document.getElementById('whyList');ul.innerHTML='';
+  why.forEach(x=>{const li=document.createElement('li');li.className=x.c;li.textContent=x.t;ul.appendChild(li);});
+}
+function renderFunnel(){
+  const order=['context','attention','creative','behavioral','business'];
+  const f=document.getElementById('funnel');
+  if(!funnelBuilt){f.innerHTML='';order.forEach(k=>{const row=document.createElement('div');row.className='fstage';row.id='f-'+k;
+    row.innerHTML=`<div class="fbar" id="fbar-${k}"></div><div class="flabel">${nameOf(k).replace(' Intelligence','')}</div><div class="fscore" id="fscore-${k}"></div>`;
+    f.appendChild(row);});funnelBuilt=true;}
+  order.forEach(k=>{const row=document.getElementById('f-'+k),bar=document.getElementById('fbar-'+k),sc=document.getElementById('fscore-'+k);
+    if(state[k].connected){row.className='fstage';bar.style.width=state[k].s+'%';bar.style.background=scoreColor(state[k].s);
+      sc.textContent=state[k].s+(state[k].c<50?' · low conf':'');}
+    else{row.className='fstage empty';bar.style.width='0';sc.textContent='not connected';}});
+}
+function highlightBottleneck(k){
+  document.querySelectorAll('.fstage').forEach(el=>el.classList.remove('bottleneck'));
+  if(k){const el=document.getElementById('f-'+k);if(el)el.classList.add('bottleneck');
+    document.getElementById('blNote').textContent=`Bottleneck: ${nameOf(k)} — recommendations target here first.`;}
+  else document.getElementById('blNote').textContent='';
+}
+function renderWeights(w){const chips=document.getElementById('weightChips');chips.innerHTML='';
+  DOMAINS.forEach(d=>{const c=document.createElement('span');c.className='wchip';c.innerHTML=`${d.name.split(' ')[0]} <b>${w[d.key].toFixed(1)}×</b>`;chips.appendChild(c);});}
+
+compute();
+</script>
+</body>
+</html>

@@ -646,7 +646,7 @@ const EVID={
  business:{pos:'an efficient return on spend',mix:'middling business efficiency',neg:'poor return on spend (high cost per outcome)',unknown:'no business read'},
 };
 function qstate(s,connected,low){
-  if(!connected)return{label:'Unknown',cls:'q-unknown',ev:'neu',dot:COLORS.dim};
+  if(!connected)return{label:'Evidence Unavailable',cls:'q-unknown',ev:'neu',dot:COLORS.dim};
   if(s>=62)return{label:low?'Strong (inferred)':'Strong',cls:'q-strong',ev:'pos',dot:COLORS.good};
   if(s>=48)return{label:low?'Mixed (inferred)':'Mixed',cls:'q-mixed',ev:'mix',dot:COLORS.warn};
   return{label:low?'Weak (inferred)':'Weak',cls:'q-weak',ev:'neg',dot:COLORS.bad};
@@ -733,7 +733,7 @@ function renderAdvisor(d,cis,conf,connKeys,bl){
   FUNNEL_ORDER.forEach(k=>{
     const connected=state[k].connected, low=connected&&state[k].c<50, q=qstate(state[k].s,connected,low), E=EVID[k];
     let txt;
-    if(!connected) txt=`<span class="srcname">${srcOf(k)}</span> — ${E.unknown} (not connected).`;
+    if(!connected) txt=`<span class="srcname">${srcOf(k)}</span> — evidence unavailable (source not connected).`;
     else txt=`<span class="srcname">${srcOf(k)}</span> shows ${E[q.ev]}${low?' <span style="color:var(--dim)">(inferred, lower confidence)</span>':''}.`;
     const li=document.createElement('li');li.className=connected?q.ev:'neu';li.innerHTML=txt;ev.appendChild(li);
   });

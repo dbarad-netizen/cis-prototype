@@ -3,241 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Creative Intelligence System — Connected Synthesis Demo</title>
+<title>Creative Intelligence System — Evidence Synthesis</title>
 <style>
-  :root{
-    --bg:#0c0e14; --panel:#151823; --panel2:#1c2030; --line:#2a3042;
-    --txt:#e8ebf2; --muted:#9aa3b8; --dim:#6b7488;
-    --accent:#6ea8fe; --good:#38d39f; --warn:#f6c544; --bad:#f06a6a; --test:#b98cf0;
-  }
+  :root{--bg:#0c0e14;--panel:#151823;--panel2:#1c2030;--line:#2a3042;--txt:#e8ebf2;--muted:#9aa3b8;--dim:#6b7488;
+    --accent:#6ea8fe;--good:#38d39f;--warn:#f6c544;--bad:#f06a6a;--test:#b98cf0;}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--txt);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.45;font-size:14px}
-  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45;font-size:14px}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
   header h1{font-size:22px;margin:0 0 4px;letter-spacing:-.3px}
-  header p{color:var(--muted);margin:0 0 22px;max-width:800px}
-  .tag{display:inline-block;font-size:11px;color:var(--accent);border:1px solid var(--line);
-    border-radius:20px;padding:2px 10px;margin-bottom:14px;letter-spacing:.4px;text-transform:uppercase}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:880px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
-  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
-    margin:0 0 14px;font-weight:600;display:flex;align-items:center;gap:8px}
-  .selects{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
-  .selwrap{flex:1;min-width:200px}
-  .selwrap label{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-  select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
-    border-radius:9px;padding:9px 10px;font-size:13px;appearance:none;cursor:pointer}
-  .hint{font-size:11px;color:var(--dim);margin-top:6px}
-  .btn{background:var(--accent);color:#0c0e14;border:none;border-radius:9px;padding:10px 14px;
-    font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
-  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
-  .btn:active{transform:translateY(1px)}
-  /* connectors */
-  .conn{border:1px solid var(--line);border-radius:11px;padding:0;margin-bottom:10px;overflow:hidden;
-    transition:border-color .3s,background .3s}
-  .conn:last-child{margin-bottom:0}
-  .conn.connected{border-color:rgba(56,211,159,.4);background:rgba(56,211,159,.04)}
-  .conn.connecting{border-color:rgba(110,168,254,.5)}
-  .conn-top{display:flex;align-items:center;gap:12px;padding:12px 13px}
-  .clogo{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;
-    justify-content:center;font-weight:700;font-size:13px;color:#0c0e14}
-  .cmeta{flex:1;min-width:0}
-  .csrc{font-weight:600;font-size:13px}
-  .cdom{font-size:11px;color:var(--dim)}
-  .cstatus{font-size:11px;margin-top:3px;color:var(--muted);min-height:14px}
-  .cstatus .pulled{color:var(--good)}
-  .cright{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
-  .cbtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
-    padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;min-width:86px;text-align:center}
-  .cbtn.connected{background:transparent;color:var(--good);border-color:rgba(56,211,159,.4)}
-  .cbtn:disabled{opacity:.6;cursor:default}
-  .inspToggle{font-size:11px;color:var(--accent);cursor:pointer;user-select:none}
-  .inspToggle.hidden{display:none}
-  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--line);
-    border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px;margin-right:5px}
-  @keyframes sp{to{transform:rotate(360deg)}}
-  /* inspect panel */
-  .inspect{border-top:1px solid var(--line);background:#0e1119;padding:0 13px;max-height:0;overflow:hidden;
-    transition:max-height .35s ease,padding .35s ease}
-  .inspect.open{max-height:760px;padding:13px}
-  .ispH{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);margin:0 0 7px}
-  .ispH:not(:first-child){margin-top:14px}
-  .raw{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);
-    background:#0a0c12;border:1px solid var(--line);border-radius:7px;padding:9px 11px;white-space:pre-wrap;line-height:1.6}
-  .raw .k{color:#7fa6d6}.raw .v{color:#cfe0a0}
-  .normrow{display:grid;grid-template-columns:1.2fr 1fr auto auto;gap:8px;align-items:center;
-    font-size:11.5px;padding:4px 0;border-top:1px solid #1a1e2b}
-  .normrow:first-of-type{border-top:none}
-  .normrow .nl{color:var(--txt)} .normrow .nr{color:var(--dim);font-family:ui-monospace,monospace}
-  .normrow .nv{font-variant-numeric:tabular-nums;color:var(--accent);text-align:right;font-weight:600}
-  .normrow .nw{color:var(--dim);font-size:10.5px;text-align:right}
-  .normtot{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;
-    border-top:1px solid var(--line);padding-top:8px;font-size:12px}
-  .normtot b{font-size:16px;font-variant-numeric:tabular-nums}
-  /* coverage + override */
+  header p{color:var(--muted);margin:0 0 12px;max-width:840px}
+  .tag{display:inline-block;font-size:11px;color:var(--accent);border:1px solid var(--line);border-radius:20px;padding:2px 10px;margin-bottom:14px;letter-spacing:.4px;text-transform:uppercase}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 14px;font-weight:600;display:flex;align-items:center;gap:8px}
   .cov{margin-left:auto;font-size:11px;color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0}
   .cov b{color:var(--txt);font-variant-numeric:tabular-nums}
-  .ovr{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
-  .ovr summary{cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);list-style:none;user-select:none}
-  .ovr summary::-webkit-details-marker{display:none}
-  .ovr summary::before{content:"▸ ";color:var(--dim)} .ovr[open] summary::before{content:"▾ "}
-  .domain{margin:14px 0 0}
-  .drow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-  .dname{font-weight:600;font-size:12px} .dval{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
-  .dval.off{color:var(--dim)}
-  input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:5px;background:var(--line);outline:none;margin:3px 0}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
-    background:var(--accent);cursor:pointer;border:2px solid #0c0e14}
-  input[type=range]:disabled::-webkit-slider-thumb{background:var(--dim);cursor:not-allowed}
-  /* funnel */
-  .funnel{display:flex;flex-direction:column;gap:8px;margin-top:4px}
-  .fstage{position:relative;background:var(--panel2);border-radius:8px;height:34px;overflow:hidden;border:1px solid var(--line)}
-  .fbar{position:absolute;top:0;left:0;height:100%;border-radius:7px;transition:width .5s ease, background .3s}
-  .flabel{position:absolute;top:0;left:10px;height:100%;display:flex;align-items:center;font-size:12px;font-weight:600;z-index:2;color:#fff;mix-blend-mode:luminosity}
-  .fscore{position:absolute;top:0;right:10px;height:100%;display:flex;align-items:center;font-size:11px;z-index:2;font-variant-numeric:tabular-nums;color:var(--txt)}
-  .fstage.empty{border-style:dashed;opacity:.6} .fstage.empty .flabel{color:var(--dim)}
-  .bottleneck{outline:2px solid var(--warn);outline-offset:1px}
-  .blnote{font-size:11px;color:var(--warn);margin-top:8px;min-height:14px}
-  /* recommendation */
-  #recCard{transition:border-color .3s}
-  .recHead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .selects{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+  .selwrap{flex:1;min-width:220px}
+  .selwrap label{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+  select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:13px;appearance:none;cursor:pointer}
+  .hint{font-size:11px;color:var(--dim);margin-top:6px}
+  .btn{background:var(--accent);color:#0c0e14;border:none;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .btn:active{transform:translateY(1px)}
+  /* hero advisor */
+  .recHead{display:flex;align-items:center;gap:13px;margin-bottom:6px}
   .recBadge{font-size:13px;font-weight:700;letter-spacing:.5px;padding:5px 13px;border-radius:8px;text-transform:uppercase}
-  .recScore{margin-left:auto;text-align:right} .recScore b{font-size:26px;font-variant-numeric:tabular-nums}
-  .recScore span{font-size:11px;color:var(--dim);display:block}
-  .recHeadline{font-size:16px;font-weight:600;margin:10px 0 4px;letter-spacing:-.2px}
-  .confbar{height:6px;border-radius:6px;background:var(--line);margin:12px 0 4px;overflow:hidden}
-  .conffill{height:100%;border-radius:6px;transition:width .4s}
-  .why{margin-top:14px} .why h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:0 0 8px}
-  .why ul{margin:0;padding:0;list-style:none}
-  .why li{padding:7px 0 7px 20px;position:relative;border-top:1px solid var(--line);font-size:13px}
-  .why li:first-child{border-top:none}
-  .why li::before{content:"";position:absolute;left:2px;top:13px;width:7px;height:7px;border-radius:50%}
-  .why li.pos::before{background:var(--good)} .why li.neg::before{background:var(--bad)}
-  .why li.neu::before{background:var(--dim)} .why li.flag::before{background:var(--warn)}
-  .missing{margin-top:14px;background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:11px 13px}
-  .missing h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--warn);margin:0 0 6px}
-  .missing p{margin:0;font-size:12px;color:var(--muted)}
-  .weights{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-  .wchip{font-size:11px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--muted)}
-  .wchip b{color:var(--txt);font-variant-numeric:tabular-nums}
-  /* calibration inputs */
-  .normrow .nw{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
-  .wIn{width:50px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:5px;
-    padding:2px 5px;font-size:11px;text-align:right;font-variant-numeric:tabular-nums}
-  .wIn:focus{outline:1px solid var(--accent)}
-  .eff{font-size:9.5px;color:var(--dim)}
-  .reCalib{font-size:11px;color:var(--accent);cursor:pointer;user-select:none}
-  /* portfolio table */
-  .ptable{width:100%;border-collapse:collapse;font-size:12px}
-  .ptable th{text-align:left;color:var(--dim);font-weight:600;text-transform:uppercase;font-size:10px;
-    letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .ptable td{padding:9px 10px;border-bottom:1px solid #1a1e2b;font-variant-numeric:tabular-nums}
-  .ptable tr:last-child td{border-bottom:none}
-  .ptable td.name{font-weight:600;font-variant-numeric:normal;white-space:nowrap}
-  .ptable .cell{display:inline-block;min-width:30px;text-align:center;border-radius:5px;padding:2px 6px;font-weight:600}
-  .pbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;text-transform:uppercase;white-space:nowrap}
-  /* advisor hero */
-  .hero{border-width:1px}
-  .heroTop{display:flex;align-items:center;gap:14px;margin-bottom:16px}
   .heroHeadline{font-size:18px;font-weight:650;letter-spacing:-.2px;line-height:1.3}
-  .advBody{display:grid;grid-template-columns:1.15fr 1fr;gap:24px}
-  @media(max-width:760px){.advBody{grid-template-columns:1fr}}
-  .advSection h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 9px}
+  .flow{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin:6px 0 4px;font-weight:600}
+  .stage{border-top:1px solid var(--line);padding:13px 0}
+  .stageHd{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:9px}
+  .stageNo{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:var(--accent);color:#0c0e14;font-size:11px;font-weight:700;flex-shrink:0}
   ul.ev{margin:0;padding:0;list-style:none}
   ul.ev li{position:relative;padding:7px 0 7px 18px;font-size:13.5px;border-top:1px solid var(--line);line-height:1.45}
   ul.ev li:first-child{border-top:none}
   ul.ev li::before{content:"";position:absolute;left:0;top:13px;width:7px;height:7px;border-radius:50%}
-  ul.ev li.pos::before{background:var(--good)} ul.ev li.neg::before{background:var(--bad)}
-  ul.ev li.mix::before{background:var(--warn)} ul.ev li.neu::before{background:var(--dim)}
+  ul.ev li.pos::before{background:var(--good)} ul.ev li.neg::before{background:var(--bad)} ul.ev li.mix::before{background:var(--warn)} ul.ev li.neu::before{background:var(--dim)}
   ul.ev .srcname{color:var(--txt);font-weight:650}
-  .blnote2{font-size:14px;margin:0;line-height:1.5;color:var(--txt)}
-  .nextAction{font-size:14px;margin:0;line-height:1.5;color:var(--txt);background:var(--panel2);
-    border-left:2.5px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 13px}
-  /* three-stage flow */
-  .flow{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin:0 0 6px;font-weight:600}
-  .stage{border-top:1px solid var(--line);padding:14px 0}
-  .stageHd{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
-    margin-bottom:10px;display:flex;align-items:center;gap:9px}
-  .stageNo{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;
-    background:var(--accent);color:#0c0e14;font-size:11px;font-weight:700;flex-shrink:0}
-  /* verbatims */
-  .verb:empty{display:none}
   .verb{margin-top:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
-  .verbHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:9px;
-    display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .ill{font-size:9.5px;font-weight:600;color:var(--dim);border:1px solid var(--line);border-radius:10px;
-    padding:1px 7px;text-transform:none;letter-spacing:0}
+  .verb:empty{display:none}
+  .verbHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:9px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ill{font-size:9.5px;font-weight:600;color:var(--dim);border:1px solid var(--line);border-radius:10px;padding:1px 7px;text-transform:none;letter-spacing:0}
   .vtheme{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:3px}
-  .vt-label{font-weight:600} .vt-prev{font-size:11px;color:var(--dim);white-space:nowrap;margin-left:10px}
-  .vquote{font-size:12.5px;color:var(--muted);font-style:italic;border-left:2px solid var(--line);
-    padding:2px 0 2px 10px;margin:4px 0 11px}
+  .vt-label{font-weight:600}.vt-prev{font-size:11px;color:var(--dim);white-space:nowrap;margin-left:10px}
+  .vquote{font-size:12.5px;color:var(--muted);font-style:italic;border-left:2px solid var(--line);padding:2px 0 2px 10px;margin:4px 0 11px}
   .vquote:last-child{margin-bottom:0}
-  /* interpretation: source agreement */
   .agreeRow{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5;margin-bottom:10px}
-  .agreeTag{flex-shrink:0;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
-    padding:3px 9px;border-radius:6px;margin-top:1px}
-  .ag-aligned{background:rgba(56,211,159,.16);color:var(--good)}
-  .ag-conflicting{background:rgba(240,106,106,.16);color:var(--bad)}
-  .ag-mixed{background:rgba(246,197,68,.16);color:var(--warn)}
-  .ag-partial{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  .agreeTag{flex-shrink:0;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 9px;border-radius:6px;margin-top:1px}
+  .ag-aligned{background:rgba(56,211,159,.16);color:var(--good)} .ag-conflicting{background:rgba(240,106,106,.16);color:var(--bad)} .ag-mixed{background:rgba(246,197,68,.16);color:var(--warn)} .ag-partial{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  .blnote2{font-size:14px;margin:0;line-height:1.5;color:var(--txt)}
+  .nextAction{font-size:14px;margin:0;line-height:1.5;color:var(--txt);background:var(--panel2);border-left:2.5px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 13px}
   .raquote{display:block;margin-top:7px;font-style:italic;color:var(--muted);font-size:13px}
-  .advFoot{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+  .advFoot{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
   @media(max-width:760px){.advFoot{grid-template-columns:1fr}}
   .confRow{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:6px}
   .confRow span:last-child{font-variant-numeric:tabular-nums;color:var(--txt);font-weight:600}
-  /* evidence chips */
+  .confbar{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+  .conffill{height:100%;border-radius:6px;transition:width .4s}
+  .missing{background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:11px 13px}
+  .missing h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--warn);margin:0 0 6px}
+  .missing p{margin:0;font-size:12px;color:var(--muted)}
+  /* chips */
   .chips{display:flex;gap:10px;flex-wrap:wrap}
-  .chip{flex:1;min-width:150px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;cursor:pointer;
-    background:var(--panel2);transition:border-color .2s,transform .1s}
+  .chip{flex:1;min-width:180px;border:1px solid var(--line);border-radius:11px;padding:12px 14px;cursor:pointer;background:var(--panel2);transition:border-color .2s,transform .1s}
   .chip:hover{border-color:var(--accent)} .chip:active{transform:translateY(1px)}
   .chipDom{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.4px}
   .chipSrc{font-size:11px;color:var(--muted);margin-bottom:7px}
   .chipState{font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px}
   .chipDot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
   .chipReveal{font-size:10.5px;color:var(--dim);margin-top:5px}
-  .q-strong{color:var(--good)} .q-mixed{color:var(--warn)} .q-weak{color:var(--bad)} .q-unknown{color:var(--dim)}
+  .q-strong{color:var(--good)}.q-mixed{color:var(--warn)}.q-weak{color:var(--bad)}.q-unknown{color:var(--dim)}
   .chipLegend{font-size:11px;color:var(--dim);margin-top:12px;line-height:1.5}
+  /* connectors */
+  .conn{border:1px solid var(--line);border-radius:11px;margin-bottom:10px;overflow:hidden;transition:border-color .3s,background .3s}
+  .conn:last-child{margin-bottom:0}
+  .conn.connected{border-color:rgba(56,211,159,.4);background:rgba(56,211,159,.04)}
+  .conn.connecting{border-color:rgba(110,168,254,.5)}
+  .conn-top{display:flex;align-items:center;gap:12px;padding:12px 13px}
+  .clogo{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0c0e14}
+  .cmeta{flex:1;min-width:0}.csrc{font-weight:600;font-size:13px}.cdom{font-size:11px;color:var(--dim)}
+  .cstatus{font-size:11px;margin-top:3px;color:var(--muted);min-height:14px}.cstatus .pulled{color:var(--good)}
+  .cright{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .cbtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;min-width:86px;text-align:center}
+  .cbtn.connected{background:transparent;color:var(--good);border-color:rgba(56,211,159,.4)}
+  .cbtn:disabled{opacity:.6;cursor:default}
+  .inspToggle{font-size:11px;color:var(--accent);cursor:pointer;user-select:none}.inspToggle.hidden{display:none}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px;margin-right:5px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .inspect{border-top:1px solid var(--line);background:#0e1119;padding:0 13px;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease}
+  .inspect.open{max-height:900px;padding:13px}
+  .ispH{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);margin:0 0 8px}
+  .ispH:not(:first-child){margin-top:14px}
+  .mrow{display:grid;grid-template-columns:1.4fr 2.2fr auto;gap:10px;align-items:center;font-size:12px;padding:4px 0;border-top:1px solid #1a1e2b}
+  .mrow:first-of-type{border-top:none}
+  .mname{color:var(--txt)} .mval{font-variant-numeric:tabular-nums;text-align:right;font-weight:600;color:var(--accent)}
+  .mbar{height:6px;border-radius:4px;background:#0a0c12;border:1px solid var(--line);position:relative;overflow:hidden}
+  .mfill{position:absolute;top:0;bottom:0;border-radius:4px}
+  .mnorm{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--muted);left:50%}
+  .msmall{font-size:10.5px;color:var(--dim);margin-top:5px}
+  .normtot{display:flex;justify-content:space-between;align-items:baseline;margin-top:9px;border-top:1px solid var(--line);padding-top:8px;font-size:12px}
+  .normtot b{font-size:16px;font-variant-numeric:tabular-nums}
   /* triage */
-  .tgroup{margin-bottom:16px} .tgroup:last-child{margin-bottom:0}
+  .tgroup{margin-bottom:16px}.tgroup:last-child{margin-bottom:0}
   .tgHead{display:flex;align-items:center;gap:9px;margin-bottom:8px}
   .tgBadge{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 9px;border-radius:6px}
   .tgCount{font-size:11px;color:var(--dim)}
-  .trow{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;
-    margin-bottom:6px;cursor:pointer;background:var(--panel2);transition:border-color .2s}
+  .trow{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;cursor:pointer;background:var(--panel2);transition:border-color .2s}
   .trow:hover{border-color:var(--accent)}
-  .trow .tname{font-weight:600;font-size:13px;min-width:118px}
-  .trow .treason{font-size:12.5px;color:var(--muted);flex:1}
-  .trow .tmetric{font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-  /* under the hood */
-  details.hood{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
-  details.hood>summary{cursor:pointer;list-style:none;padding:14px 18px;font-size:12px;font-weight:600;
-    text-transform:uppercase;letter-spacing:.5px;color:var(--muted);user-select:none}
+  .trow .tname{font-weight:600;font-size:13px;flex:1;min-width:160px}
+  .trow .treason{font-size:12.5px;color:var(--muted);text-align:right}
+  /* hood */
+  details.hood{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+  details.hood>summary{cursor:pointer;list-style:none;padding:14px 18px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);user-select:none}
   details.hood>summary::-webkit-details-marker{display:none}
   details.hood>summary::before{content:"▸ ";color:var(--dim)} details.hood[open]>summary::before{content:"▾ "}
   .hoodInner{padding:0 18px 18px}
-  .recScoreRow{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
+  .recScoreRow{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted);margin-bottom:14px}
   .recScoreRow b{font-size:24px;font-variant-numeric:tabular-nums}
-  .hoodLbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:7px}
-  footer{color:var(--dim);font-size:11px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
-  .full{grid-column:1/-1}
-  /* consultant bot */
-  .botFab{position:fixed;right:20px;bottom:20px;z-index:50;background:var(--accent);color:#0c0e14;font-weight:700;
-    font-size:13px;padding:12px 16px;border-radius:24px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+  .hoodLbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
+  .funnel{display:flex;flex-direction:column;gap:8px}
+  .fstage{position:relative;background:var(--panel2);border-radius:8px;height:36px;overflow:hidden;border:1px solid var(--line)}
+  .fbar{position:absolute;top:0;left:0;height:100%;border-radius:7px;transition:width .5s ease,background .3s}
+  .flabel{position:absolute;top:0;left:11px;height:100%;display:flex;align-items:center;font-size:12px;font-weight:600;z-index:2;color:#fff;mix-blend-mode:luminosity}
+  .fscore{position:absolute;top:0;right:11px;height:100%;display:flex;align-items:center;font-size:11px;z-index:2;font-variant-numeric:tabular-nums;color:var(--txt)}
+  .fstage.empty{border-style:dashed;opacity:.6}.fstage.empty .flabel{color:var(--dim)}
+  .farrow{text-align:center;color:var(--dim);font-size:11px;margin:-2px 0}
+  .bottleneck{outline:2px solid var(--warn);outline-offset:1px}
+  footer{color:var(--dim);font-size:11px;margin-top:8px;border-top:1px solid var(--line);padding-top:14px}
+  /* bot */
+  .botFab{position:fixed;right:20px;bottom:20px;z-index:50;background:var(--accent);color:#0c0e14;font-weight:700;font-size:13px;padding:12px 16px;border-radius:24px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.45)}
   .botFab:active{transform:translateY(1px)}
-  .botPanel{position:fixed;right:20px;bottom:20px;z-index:51;width:372px;max-width:calc(100vw - 32px);
-    height:72vh;max-height:640px;background:var(--panel);border:1px solid var(--line);border-radius:16px;
-    display:none;flex-direction:column;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+  .botPanel{position:fixed;right:20px;bottom:20px;z-index:51;width:380px;max-width:calc(100vw - 32px);height:74vh;max-height:660px;background:var(--panel);border:1px solid var(--line);border-radius:16px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,.55)}
   .botPanel.open{display:flex}
   .botHead{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid var(--line)}
-  .botHead b{font-size:14px} .botSub{font-size:10.5px;color:var(--dim);margin-top:1px}
+  .botHead b{font-size:14px}.botSub{font-size:10.5px;color:var(--dim);margin-top:1px}
   .botClose{cursor:pointer;color:var(--muted);font-size:15px;padding:2px 6px;line-height:1}
   .botMsgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
   .bmsg{font-size:13px;line-height:1.5;border-radius:11px;padding:9px 12px;max-width:90%}
   .bmsg.user{align-self:flex-end;background:var(--accent);color:#0c0e14;font-weight:500}
   .bmsg.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
-  .bmsg.bot ul.botul{margin:7px 0 2px;padding-left:18px} .bmsg.bot li{margin:2px 0}
+  .bmsg.bot ul.botul{margin:7px 0 2px;padding-left:18px}.bmsg.bot li{margin:2px 0}
   .botquote{display:block;font-style:italic;color:var(--muted);border-left:2px solid var(--line);padding-left:9px;margin-top:6px}
   .botnote{display:block;font-size:11px;color:var(--dim);margin-top:5px}
   .botChips{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px}
@@ -252,751 +156,478 @@
 <body>
 <div class="wrap">
   <header>
-    <span class="tag">Working Prototype · Evidence Synthesis Platform</span>
+    <span class="tag">Working Prototype · Evidence Synthesis Engine</span>
     <h1>Creative Intelligence System</h1>
-    <p>CIS is not another dashboard or another score. It <b>synthesizes the evidence you already collect but rarely
-       connect</b> — quantitative signals and the actual language consumers use — works out <b>where performance is
-       breaking down</b>, and recommends <b>what to do next</b>. Every read follows the same chain:
-       <b>Evidence → Interpretation → Recommendation</b>. The scoring still happens underneath (open <i>Under the
-       hood</i>), but the recommendation is the product and the evidence is the rationale.</p>
-    <p style="font-size:12px;color:var(--dim);max-width:840px;margin-top:-14px">The 12 campaigns are derived from a
-       <b>real public Facebook-ads dataset</b>; Behavioral &amp; Business reads come from the actual metrics, while
-       the upper-funnel reads (Context, Attention, Creative) are <i>inferred</i> and marked lower-confidence. The
-       consumer <b>verbatims are illustrative placeholders</b> for real Ace Metrix open-ends — they show how
-       qualitative evidence sits alongside the numbers, and where the two <i>agree or conflict</i>.</p>
+    <p>CIS synthesizes the creative-effectiveness evidence you already collect but rarely connect — emotional
+       measures, creative attributes, attention, consumer verbatims, brand impact, and business outcomes — into one
+       read: <b>Evidence → Interpretation → Recommendation</b>. It organizes everything as a chain —
+       <b>Creative Evidence → Brand Evidence → Business Evidence</b> — and finds where it breaks down.</p>
+    <p style="font-size:12px;color:var(--dim);max-width:840px">The campaigns are <b>real, recognizable ads</b>;
+       the measures mirror the <b>Ace Metrix / iSpot</b> model (Likeability, emotional metrics, attributes vs.
+       category norm, brand recall, intent, outcomes). Signal values here are <b>illustrative reconstructions</b>
+       drawn from each ad's public reputation — not actual Ace Metrix scores — and gaps are shown honestly as
+       "Evidence Unavailable."</p>
   </header>
 
   <div class="selects">
     <div class="selwrap">
-      <label>Campaign — real Facebook ad data</label>
-      <select id="dataset"></select>
-      <div class="hint" id="dsHint"></div>
+      <label>Campaign — real ad</label>
+      <select id="adSel"></select>
+      <div class="hint" id="adHint"></div>
     </div>
-    <div class="selwrap" style="flex:0 0 auto"><button class="btn" id="connectAll">⚡ Connect all sources</button></div>
+    <div class="selwrap" style="flex:0 0 auto"><button class="btn" id="connectAll">⚡ Connect all evidence</button></div>
     <div class="selwrap" style="flex:0 0 auto"><button class="btn ghost" id="disconnectAll">Reset</button></div>
   </div>
 
-  <!-- ADVISOR READOUT (hero) -->
-  <div class="card hero" id="recCard">
-    <div class="heroTop">
-      <span class="recBadge" id="recBadge">—</span>
-      <div class="heroHeadline" id="recHeadline">Connect data sources to begin.</div>
-    </div>
+  <!-- ADVISOR -->
+  <div class="card" id="recCard">
+    <div class="recHead"><span class="recBadge" id="recBadge">—</span><div class="heroHeadline" id="recHeadline">Connect evidence to begin.</div></div>
     <div class="flow">Evidence → Interpretation → Recommendation</div>
-
     <div class="stage">
       <div class="stageHd"><span class="stageNo">1</span> Evidence</div>
-      <ul class="ev" id="evList"><li class="neu">No evidence ingested yet.</li></ul>
+      <ul class="ev" id="evList"><li class="neu">No evidence connected yet.</li></ul>
       <div class="verb" id="verbBlock"></div>
     </div>
-
     <div class="stage">
       <div class="stageHd"><span class="stageNo">2</span> Interpretation</div>
-      <div class="agree" id="agreeBlock"></div>
+      <div id="agreeBlock"></div>
       <p class="blnote2" id="blNote">—</p>
     </div>
-
     <div class="stage">
       <div class="stageHd"><span class="stageNo">3</span> Recommendation</div>
       <p class="nextAction" id="nextAction">—</p>
     </div>
-
     <div class="advFoot">
-      <div class="confWrap">
-        <div class="confRow"><span>How sure we are — evidence quality</span><span id="confTxt">—</span></div>
-        <div class="confbar"><div class="conffill" id="confFill" style="width:0"></div></div>
-      </div>
-      <div class="missing"><h3>What we're missing</h3><p id="missingTxt">No sources connected yet.</p></div>
+      <div><div class="confRow"><span>How sure we are — evidence quality</span><span id="confTxt">—</span></div><div class="confbar"><div class="conffill" id="confFill" style="width:0"></div></div></div>
+      <div class="missing"><h3>What we're missing</h3><p id="missingTxt">No evidence connected yet.</p></div>
     </div>
   </div>
 
   <!-- EVIDENCE AT A GLANCE -->
   <div class="card">
-    <h2>Evidence at a glance <span class="cov" style="text-transform:none;letter-spacing:0">tap a signal to see the numbers</span></h2>
+    <h2>Evidence at a glance <span class="cov">tap a category to see the measures</span></h2>
     <div class="chips" id="chips"></div>
     <div class="chipLegend" id="chipLegend"></div>
   </div>
 
-  <!-- DATA SOURCES -->
+  <!-- SOURCES -->
   <div class="card">
-    <h2>Data Sources <span class="cov">coverage <b id="covTxt">0/5</b></span></h2>
+    <h2>Evidence Sources <span class="cov">connected <b id="covTxt">0/3</b></span></h2>
     <div id="connectors"></div>
-    <details class="ovr">
-      <summary>Manual override</summary>
-      <div id="domains"></div>
-      <div class="domain">
-        <div class="drow"><span class="dname">Media spend level</span><span class="dval" id="spendVal">22</span></div>
-        <input type="range" id="spend" min="0" max="100" value="22">
-      </div>
-    </details>
   </div>
 
-  <!-- ACTION TRIAGE -->
+  <!-- TRIAGE -->
   <div class="card">
-    <h2>Across all campaigns — what to do <span class="cov" style="text-transform:none;letter-spacing:0">live triage</span></h2>
+    <h2>Across all campaigns — what to do <span class="cov">live triage</span></h2>
     <div id="triage"></div>
-    <div class="hint" style="margin-top:10px">Every campaign run through the same engine and grouped by recommended
-      action. Tap one to load its full read above. Switch market context (under the hood) and the triage reshuffles.</div>
+    <div class="hint" style="margin-top:10px">Every ad run through the same engine and grouped by recommended action. Tap one to load its full read above.</div>
   </div>
 
-  <!-- UNDER THE HOOD -->
+  <!-- HOOD -->
   <details class="hood">
-    <summary>Under the hood — internal scores, funnel &amp; calibration</summary>
+    <summary>Under the hood — internal scores &amp; the evidence chain</summary>
     <div class="hoodInner">
-      <div class="recScoreRow"><span>Synthesized read — internal composite (0–100)</span><b id="cisScore">—</b></div>
-      <div class="hoodLbl" style="margin-top:16px">Intelligence funnel — where the signal breaks down</div>
+      <div class="recScoreRow"><span>Synthesized read — internal composite (0–100, vs category norm)</span><b id="cisScore">—</b></div>
+      <div class="hoodLbl">Evidence chain — where it breaks down</div>
       <div class="funnel" id="funnel"></div>
-      <div style="margin-top:16px">
-        <div class="hoodLbl">Active domain weights (set by market context)</div>
-        <div class="weights" id="weightChips"></div>
-        <div class="selwrap" style="margin-top:12px;max-width:320px">
-          <label>Market context (dynamic weighting)</label>
-          <select id="market"></select>
-          <div class="hint" id="marketHint"></div>
-        </div>
-      </div>
     </div>
   </details>
 
   <footer>
-    A research prototype. Connectors are simulated and the upper-funnel reads are inferred, so this is a directional
-    advisor, not live tooling. The narrative leads; the scoring, normalization and calibration sit under the hood,
-    one tap away — so a recommendation is never a black box.
+    A research prototype. Evidence sources are simulated and signal values are illustrative reconstructions of public
+    ad reputation — directional, not actual vendor data. The narrative leads; measures sit under each category and
+    under the hood, one tap away, so a recommendation is never a black box.
   </footer>
 </div>
 
 <!-- CONSULTANT BOT -->
 <div id="botFab" class="botFab">💬 Ask the CIS Consultant</div>
 <div id="botPanel" class="botPanel">
-  <div class="botHead">
-    <div><b>CIS Consultant</b><div class="botSub">answers only from synthesized evidence — never guesswork</div></div>
-    <span id="botClose" class="botClose">✕</span>
-  </div>
+  <div class="botHead"><div><b>CIS Consultant</b><div class="botSub">answers only from synthesized evidence — never guesswork</div></div><span id="botClose" class="botClose">✕</span></div>
   <div id="botMsgs" class="botMsgs"></div>
   <div id="botChips" class="botChips"></div>
-  <div class="botInputRow">
-    <input id="botInput" class="botInput" placeholder="Ask why, a what-if, or for a summary…" autocomplete="off">
-    <button id="botSend" class="botSend">Send</button>
-  </div>
+  <div class="botInputRow"><input id="botInput" class="botInput" placeholder="Ask why, a what-if, or for a summary…" autocomplete="off"><button id="botSend" class="botSend">Send</button></div>
 </div>
 
 <script>
-const c1=x=>Math.max(0,Math.min(100,x)), R=Math.round;
+const R=Math.round, c1=x=>Math.max(0,Math.min(100,x));
+const COLORS={good:'#38d39f',warn:'#f6c544',bad:'#f06a6a',accent:'#6ea8fe',test:'#b98cf0',dim:'#6b7488'};
+const scoreColor=s=>s>=62?COLORS.good:s>=48?COLORS.warn:COLORS.bad;
 
-// ---------- Domains & source tools ----------
-const DOMAINS=[
-  {key:'context',  name:'Context Intelligence',  src:'Peer39',      cat:'Contextual',       logo:'#7a8cff'},
-  {key:'attention',name:'Attention Intelligence', src:'iSpot',       cat:'Attention & airings',   logo:'#6ea8fe'},
-  {key:'creative', name:'Creative Intelligence',  src:'Ace Metrix',  cat:'Creative testing + open-ends', logo:'#b98cf0'},
-  {key:'behavioral',name:'Behavioral Intelligence',src:'GA4 + Search',cat:'Web behavior',    logo:'#38d39f'},
-  {key:'business', name:'Business Intelligence',   src:'Snowflake',  cat:'Revenue warehouse',logo:'#f6c544'},
-];
-
-// ---------- Normalization spec: native metric -> 0-100 ----------
-const SPEC={
-  context:{
-    score:[
-      {l:'Adjacency fit',   w:0.40, n:p=>c1(p.adjacencyFitPct),                 r:p=>p.adjacencyFitPct+'%'},
-      {l:'Seasonality fit', w:0.25, n:p=>c1(p.seasonalityFitPct),               r:p=>p.seasonalityFitPct+'%'},
-      {l:'Brand safety',    w:0.20, n:p=>c1(p.brandSafePct),                    r:p=>p.brandSafePct+'%'},
-      {l:'Comp. clutter',   w:0.15, n:p=>c1(100-p.competitorAdsNearby*8),       r:p=>p.competitorAdsNearby+' rival ads'},
-    ],
-    conf:[
-      {l:'Coverage', w:0.6, n:p=>c1(p.measuredCoveragePct), r:p=>p.measuredCoveragePct+'% measured'},
-      {l:'Recency',  w:0.4, n:p=>c1(100-p.recencyDays*3),   r:p=>p.recencyDays+'d ago'},
-    ]},
-  attention:{
-    score:[
-      {l:'AU index',     w:0.50, n:p=>c1((p.auIndex-60)/80*100),     r:p=>p.auIndex+' vs 100'},
-      {l:'Viewability',  w:0.30, n:p=>c1(p.viewabilityPct),          r:p=>p.viewabilityPct+'%'},
-      {l:'Time in view', w:0.20, n:p=>c1(p.timeInViewSec/5*100),     r:p=>p.timeInViewSec+'s'},
-    ],
-    conf:[
-      {l:'Sample size', w:0.6, n:p=>c1(p.sampleImpressions/2e6*100), r:p=>(p.sampleImpressions/1e6).toFixed(2)+'M impr'},
-      {l:'Recency',     w:0.4, n:p=>c1(100-p.recencyDays*3),         r:p=>p.recencyDays+'d ago'},
-    ]},
-  creative:{
-    score:[
-      {l:'Star rating',    w:0.40, n:p=>c1((p.starRating-1)/4.9*100), r:p=>p.starRating+'/5.9'},
-      {l:'Strong emotion', w:0.25, n:p=>c1(p.emotionStrongPct),       r:p=>p.emotionStrongPct+'%'},
-      {l:'Brand recall',   w:0.20, n:p=>c1(p.brandRecallPct),         r:p=>p.brandRecallPct+'%'},
-      {l:'Distinctiveness',w:0.15, n:p=>c1(p.distinctivenessPct),     r:p=>p.distinctivenessPct+'%'},
-    ],
-    conf:[
-      {l:'Panel size', w:0.6, n:p=>c1(p.panelSize/200*100), r:p=>'n='+p.panelSize},
-      {l:'Recency',    w:0.4, n:p=>c1(100-p.recencyDays*2), r:p=>p.recencyDays+'d ago'},
-    ]},
-  behavioral:{
-    score:[
-      {l:'Conversion rate', w:0.40, n:p=>c1(p.conversionRatePct/8*100), r:p=>p.conversionRatePct+'%'},
-      {l:'Search lift',     w:0.25, n:p=>c1(p.searchLiftPct/50*100),    r:p=>'+'+p.searchLiftPct+'%'},
-      {l:'Sessions lift',   w:0.20, n:p=>c1(p.sessionsLiftPct/40*100),  r:p=>'+'+p.sessionsLiftPct+'%'},
-      {l:'Return visitors', w:0.15, n:p=>c1(p.returnVisitorPct*2),      r:p=>p.returnVisitorPct+'%'},
-    ],
-    conf:[
-      {l:'Tagged events', w:0.6, n:p=>c1(p.taggedEvents/1e5*100), r:p=>(p.taggedEvents/1000).toFixed(0)+'k events'},
-      {l:'Data gaps',     w:0.4, n:p=>c1(100-p.dataGapPct*2),     r:p=>p.dataGapPct+'% gaps'},
-    ]},
-  business:{
-    score:[
-      {l:'Revenue vs plan', w:0.45, n:p=>c1(p.revenueVsPlanPct),     r:p=>p.revenueVsPlanPct+'% of plan'},
-      {l:'LTV : CAC',       w:0.30, n:p=>c1(p.ltvCacRatio/4*100),    r:p=>p.ltvCacRatio+':1'},
-      {l:'CAC vs target',   w:0.25, n:p=>c1(p.cacVsTargetPct),       r:p=>p.cacVsTargetPct+'% of target'},
-    ],
-    conf:[
-      {l:'Model confidence', w:0.7, n:p=>c1(p.modelConfidencePct), r:p=>p.modelConfidencePct+'%'},
-      {l:'Recency',          w:0.3, n:p=>c1(100-p.recencyDays*2),  r:p=>p.recencyDays+'d ago'},
-    ]},
+// ---------- evidence model: 3 categories in a causal chain ----------
+const CHAIN=['creative','brand','business'];
+const CATS={
+  creative:{name:'Creative Evidence',src:'Ace Metrix',cat:'Creative testing + verbatims',logo:'#b98cf0'},
+  brand:{name:'Brand Evidence',src:'iSpot',cat:'Brand impact · recall, intent',logo:'#6ea8fe'},
+  business:{name:'Business Evidence',src:'Outcomes (MMM)',cat:'Sales & conversion',logo:'#f6c544'},
 };
-const ALL=DOMAINS.map(d=>d.key);
-// Calibration: editable score-component weights per domain (defaults from SPEC)
-const CALIB={};
-DOMAINS.forEach(d=>CALIB[d.key]=SPEC[d.key].score.map(c=>c.w));
-function effW(dom){const raw=CALIB[dom];const sum=raw.reduce((a,b)=>a+b,0)||1;return raw.map(x=>x/sum);}
-function normalize(dom,p){
-  const sp=SPEC[dom], ew=effW(dom);
-  const s=R(sp.score.reduce((a,c,i)=>a+ew[i]*c.n(p),0));
-  const c=R(sp.conf.reduce((a,c)=>a+c.w*c.n(p),0));
-  return {s:c1(s),c:c1(c)};
+const ACTION={SCALE:{label:'Scale',color:COLORS.good},OPTIMIZE:{label:'Optimize',color:COLORS.accent},TEST:{label:'Test & learn',color:COLORS.test},STOP:{label:'Stop',color:COLORS.bad}};
+
+// real, recognizable ads — ILLUSTRATIVE signal profiles (vs category norm; 50 = norm)
+const ADS={
+  snickers:{name:'Snickers — “You’re Not You When You’re Hungry”', short:'Snickers', cat:'Confectionery · Super Bowl', spend:62,
+    creative:{Attention:78,Likeability:82,emotions:[['Funny',88],['Relatable',70]],Relevance:75,Desire:68,sentiment:'pos',
+      verb:[{t:'Funny & memorable',p:'~41% of comments',q:'Hilarious — and I knew it was Snickers right away.'},{t:'Clear brand tie',p:'~24% of comments',q:'The whole hunger idea just works.'}]},
+    brand:{Recall:84,Intent:66,Favorability:72}, business:{SalesLift:70,Conversion:64}, conf:{creative:86,brand:74,business:66}},
+  oldspice:{name:'Old Spice — “The Man Your Man Could Smell Like”', short:'Old Spice', cat:'Personal care', spend:55,
+    creative:{Attention:80,Likeability:86,emotions:[['Funny',90],['Surprising',82]],Distinctiveness:88,Desire:66,sentiment:'pos',
+      verb:[{t:'Absurd & unforgettable',p:'~39% of comments',q:'I’m on a horse. Iconic.'},{t:'Reappraised the brand',p:'~26% of comments',q:'Made Old Spice feel cool again.'}]},
+    brand:{Recall:82,Intent:64,Favorability:75}, business:{SalesLift:72,Conversion:60}, conf:{creative:86,brand:74,business:66}},
+  dove:{name:'Dove — “Real Beauty Sketches”', short:'Dove', cat:'Personal care', spend:50,
+    creative:{Attention:74,Likeability:84,emotions:[['Inspiring',86],['Heartfelt',80]],Relevance:82,sentiment:'pos',
+      verb:[{t:'Made me rethink beauty',p:'~40% of comments',q:'I actually see myself differently after watching.'},{t:'On-brand & authentic',p:'~28% of comments',q:'Exactly what Dove should say.'}]},
+    brand:{Recall:78,Intent:70,Favorability:80}, business:{SalesLift:64,Conversion:58}, conf:{creative:84,brand:76,business:64}},
+  nike:{name:'Nike — “Dream Crazy” (Kaepernick)', short:'Nike', cat:'Athletic apparel', spend:70,
+    creative:{Attention:82,Likeability:64,emotions:[['Inspiring',88],['Divisive',55]],Relevance:70,sentiment:'mixed',
+      verb:[{t:'Powerful & inspiring',p:'~38% of comments',q:'Gave me chills — exactly what Nike should stand for.'},{t:'Polarized backlash',p:'~29% of comments',q:'Done with Nike after this.'}]},
+    brand:{Recall:86,Intent:68,Favorability:58}, business:{SalesLift:66,Conversion:62}, conf:{creative:84,brand:74,business:66}},
+  budweiser:{name:'Budweiser — “Puppy Love”', short:'Budweiser', cat:'Beer · Super Bowl', spend:60,
+    creative:{Attention:84,Likeability:90,emotions:[['Heartfelt',92],['Warm',78]],Relevance:55,sentiment:'pos',
+      verb:[{t:'Emotionally moving',p:'~46% of comments',q:'The puppy got me — I actually teared up.'},{t:'Brand barely registered',p:'~22% of comments',q:'Adorable… wait, what was it even advertising?'}]},
+    brand:{Recall:40,Intent:44,Favorability:58}, business:null, conf:{creative:88,brand:72}},
+  on:{name:'On Running — “Elmo” campaign', short:'On Running', cat:'Athletic footwear', spend:45,
+    creative:{Attention:72,Likeability:80,emotions:[['Heartwarming',76],['Fun',70]],Relevance:60,sentiment:'pos',
+      verb:[{t:'Loved the character',p:'~43% of comments',q:'Elmo made me smile the whole time.'},{t:'Whose shoes?',p:'~25% of comments',q:'Cute… but I couldn’t tell you the brand.'}]},
+    brand:{Recall:38,Intent:50,Favorability:52}, business:null, conf:{creative:80,brand:68}},
+  geico:{name:'GEICO — “Hump Day”', short:'GEICO', cat:'Insurance', spend:58,
+    creative:{Attention:78,Likeability:80,emotions:[['Funny',86]],Relevance:62,Desire:55,sentiment:'pos',
+      verb:[{t:'Quoted it for days',p:'~45% of comments',q:'WHAT DAY IS IT?! — couldn’t stop saying it.'},{t:'Brand stuck',p:'~30% of comments',q:'Instantly knew it was GEICO.'}]},
+    brand:{Recall:84,Intent:60,Favorability:70}, business:{SalesLift:44,Conversion:42}, conf:{creative:86,brand:74,business:62}},
+  pepsi:{name:'Pepsi — Kendall Jenner', short:'Pepsi', cat:'Soft drinks', spend:65,
+    creative:{Attention:88,Likeability:28,emotions:[['Polarizing',40]],Relevance:30,sentiment:'neg',
+      verb:[{t:'Tone-deaf',p:'~52% of comments',q:'Trivializes real protest — completely missed the mark.'},{t:'Brand backlash',p:'~19% of comments',q:'Made me think less of Pepsi.'}]},
+    brand:{Recall:80,Intent:32,Favorability:22}, business:{SalesLift:30,Conversion:34}, conf:{creative:84,brand:72,business:60}},
+  peloton:{name:'Peloton — “The Gift That Gives Back”', short:'Peloton', cat:'Fitness', spend:55,
+    creative:{Attention:76,Likeability:34,emotions:[['Uneasy',38]],Relevance:42,sentiment:'neg',
+      verb:[{t:'Comes across dystopian',p:'~44% of comments',q:'Felt like a story about control, not fitness.'},{t:'Uncomfortable',p:'~21% of comments',q:'The wife looks terrified the whole time.'}]},
+    brand:{Recall:78,Intent:38,Favorability:30}, business:{SalesLift:35,Conversion:36}, conf:{creative:82,brand:70,business:60}},
+  quibi:{name:'Quibi — launch campaign', short:'Quibi', cat:'Streaming', spend:48,
+    creative:{Attention:40,Likeability:38,emotions:[['Confusing',35]],Relevance:34,sentiment:'mixed',
+      verb:[{t:'Didn’t get it',p:'~37% of comments',q:'I still don’t know what Quibi is.'},{t:'Forgettable',p:'~22% of comments',q:'Nothing stuck.'}]},
+    brand:{Recall:36,Intent:34,Favorability:40}, business:{SalesLift:28,Conversion:30}, conf:{creative:78,brand:66,business:58}},
+};
+
+// ---------- synthesis ----------
+function synth(k,ad){
+  const d=ad[k];
+  if(d==null) return {avail:false};
+  let vals=[],measures=[];
+  if(k==='creative'){
+    [['Attention',d.Attention],['Likeability',d.Likeability]].forEach(([n,v])=>{if(v!=null){vals.push(v);measures.push([n,v]);}});
+    if(d.emotions&&d.emotions.length) d.emotions.forEach((e,i)=>{measures.push(['Emotion · '+e[0],e[1]]);if(i===0)vals.push(e[1]);});
+    [['Relevance',d.Relevance],['Desire',d.Desire],['Distinctiveness',d.Distinctiveness]].forEach(([n,v])=>{if(v!=null){vals.push(v);measures.push([n,v]);}});
+  } else {
+    Object.entries(d).forEach(([n,v])=>{if(typeof v==='number'){vals.push(v);measures.push([n,v]);}});
+  }
+  const score=R(vals.reduce((a,b)=>a+b,0)/vals.length);
+  const conf=(ad.conf&&ad.conf[k]!=null)?ad.conf[k]:(k==='creative'?82:k==='brand'?70:62);
+  return {avail:true,score:c1(score),conf:c1(conf),measures,emotions:d.emotions,sentiment:d.sentiment,verb:d.verb};
+}
+const availOf=id=>CHAIN.filter(k=>synth(k,ADS[id]).avail);
+function bottleneck(S,keys){
+  const order=CHAIN.filter(k=>keys.includes(k));
+  if(!order.length)return null;let bl=null,wo=-1;
+  order.forEach((k,i)=>{const sc=S(k),up=i>0?S(order[i-1]):sc,dr=Math.max(0,up-sc),pen=(100-sc)*0.6+dr*0.8;if(pen>wo){wo=pen;bl=k;}});
+  return bl;
+}
+function decide(S,has,sentiment,conf,spend){
+  const A=(rec,headline,action)=>({rec,headline,action});
+  if(conf<45) return A('TEST','The evidence is too thin to act on yet.','Gather more measurement before committing — this read isn’t reliable.');
+  if(sentiment==='neg') return A('STOP','High attention, but consumers are reacting against it.','Pull or rework the creative — attention without affinity damages the brand more than it helps.');
+  if(has('creative')&&S('creative')<48) return A('TEST','The creative isn’t landing.','Test new creative — the execution isn’t earning attention or affinity.');
+  if(has('creative')&&has('brand')&&S('creative')>=60&&S('brand')<48) return A('OPTIMIZE','Memorable ad, forgettable brand.','Strengthen brand linkage and distinctiveness — people enjoy the ad but aren’t connecting it to the brand.');
+  if(has('creative')&&has('brand')&&has('business')&&S('creative')>=60&&S('brand')>=54&&S('business')<48) return A('OPTIMIZE','The work lands and the brand sticks — but it isn’t converting.','Fix the activation path (offer, targeting, follow-through). The creative isn’t the problem.');
+  if(has('creative')&&has('brand')&&S('creative')>=60&&S('brand')>=56&&(!has('business')||S('business')>=54)) return A('SCALE','The creative works, the brand sticks, and outcomes follow.','Put more weight behind this — it’s firing across the whole chain.');
+  return A('OPTIMIZE','Mixed evidence — strengthen the weakest link first.','Address the weakest stage in the chain before adding spend.');
+}
+function evaluate(id,keys){
+  const ad=ADS[id], s={};
+  keys.forEach(k=>s[k]=synth(k,ad));
+  const conf=keys.length?R(keys.reduce((a,k)=>a+s[k].conf,0)/keys.length):0;
+  const S=k=>s[k]?s[k].score:0, has=k=>keys.includes(k);
+  let num=0,den=0;keys.forEach(k=>{const cf=s[k].conf/100,e=(0.5+0.5*cf);num+=s[k].score*e;den+=e;});
+  const cis=den?R(num/den):0;
+  const sentiment=keys.includes('creative')?ad.creative.sentiment:'pos';
+  const bl=bottleneck(S,keys), d=decide(S,has,sentiment,conf,ad.spend);
+  return {s,keys,conf,cis,sentiment,bl,...d};
 }
 
-const MARKETS={
-  balanced:{label:'Balanced (default)',hint:'Equal emphasis across domains.',w:{context:1,attention:1,creative:1,behavioral:1,business:1}},
-  brand:{label:'Brand-building phase',hint:'Upper-funnel matters more; outcomes lag.',w:{context:1.3,attention:1.3,creative:1.5,behavioral:0.7,business:0.6}},
-  performance:{label:'Performance / Q4 push',hint:'Outcomes dominate; brand signals discounted.',w:{context:0.7,attention:0.9,creative:0.9,behavioral:1.5,business:1.6}},
-  launch:{label:'New product launch',hint:'Attention + distinctiveness drive early success.',w:{context:1.1,attention:1.4,creative:1.4,behavioral:1.0,business:0.8}},
-  downturn:{label:'Efficiency / downturn',hint:'Every dollar must show business return.',w:{context:0.8,attention:0.8,creative:0.9,behavioral:1.2,business:1.7}},
-};
-
-// ---------- Demo datasets: RAW payloads the connectors "pull" ----------
-const RAW={"c916_30_34":{"context":{"adjacencyFitPct":58,"seasonalityFitPct":40,"brandSafePct":61,"competitorAdsNearby":7,"measuredCoveragePct":43,"recencyDays":19},"attention":{"auIndex":106,"viewabilityPct":27,"timeInViewSec":2.6,"sampleImpressions":1020000,"recencyDays":16},"creative":{"starRating":4.9,"emotionStrongPct":52,"brandRecallPct":76,"distinctivenessPct":52,"panelSize":102,"recencyDays":24},"behavioral":{"conversionRatePct":4.72,"searchLiftPct":20,"sessionsLiftPct":23,"returnVisitorPct":21,"taggedEvents":63000,"dataGapPct":18},"business":{"revenueVsPlanPct":72,"ltvCacRatio":2.1,"cacVsTargetPct":72,"modelConfidencePct":63,"recencyDays":18}},"c916_35_39":{"context":{"adjacencyFitPct":75,"seasonalityFitPct":57,"brandSafePct":78,"competitorAdsNearby":5,"measuredCoveragePct":38,"recencyDays":21},"attention":{"auIndex":109,"viewabilityPct":31,"timeInViewSec":2.8,"sampleImpressions":800000,"recencyDays":20},"creative":{"starRating":5.3,"emotionStrongPct":60,"brandRecallPct":84,"distinctivenessPct":60,"panelSize":80,"recencyDays":30},"behavioral":{"conversionRatePct":7.2,"searchLiftPct":35,"sessionsLiftPct":35,"returnVisitorPct":36,"taggedEvents":48000,"dataGapPct":26},"business":{"revenueVsPlanPct":86,"ltvCacRatio":2.6,"cacVsTargetPct":86,"modelConfidencePct":48,"recencyDays":26}},"c916_40_44":{"context":{"adjacencyFitPct":70,"seasonalityFitPct":52,"brandSafePct":73,"competitorAdsNearby":6,"measuredCoveragePct":38,"recencyDays":21},"attention":{"auIndex":106,"viewabilityPct":28,"timeInViewSec":2.6,"sampleImpressions":800000,"recencyDays":20},"creative":{"starRating":4.2,"emotionStrongPct":37,"brandRecallPct":61,"distinctivenessPct":37,"panelSize":80,"recencyDays":30},"behavioral":{"conversionRatePct":6.72,"searchLiftPct":32,"sessionsLiftPct":33,"returnVisitorPct":34,"taggedEvents":46000,"dataGapPct":27},"business":{"revenueVsPlanPct":84,"ltvCacRatio":2.6,"cacVsTargetPct":84,"modelConfidencePct":46,"recencyDays":27}},"c916_45_49":{"context":{"adjacencyFitPct":52,"seasonalityFitPct":34,"brandSafePct":55,"competitorAdsNearby":8,"measuredCoveragePct":38,"recencyDays":21},"attention":{"auIndex":138,"viewabilityPct":67,"timeInViewSec":4.6,"sampleImpressions":860000,"recencyDays":19},"creative":{"starRating":4.2,"emotionStrongPct":38,"brandRecallPct":62,"distinctivenessPct":38,"panelSize":86,"recencyDays":28},"behavioral":{"conversionRatePct":3.84,"searchLiftPct":14,"sessionsLiftPct":18,"returnVisitorPct":16,"taggedEvents":53000,"dataGapPct":24},"business":{"revenueVsPlanPct":62,"ltvCacRatio":1.7,"cacVsTargetPct":62,"modelConfidencePct":53,"recencyDays":24}},"c936_30_34":{"context":{"adjacencyFitPct":46,"seasonalityFitPct":28,"brandSafePct":49,"competitorAdsNearby":8,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":85,"viewabilityPct":1,"timeInViewSec":1.3,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":5.9,"emotionStrongPct":74,"brandRecallPct":98,"distinctivenessPct":74,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":6.64,"searchLiftPct":32,"sessionsLiftPct":32,"returnVisitorPct":33,"taggedEvents":83000,"dataGapPct":8},"business":{"revenueVsPlanPct":87,"ltvCacRatio":2.7,"cacVsTargetPct":87,"modelConfidencePct":83,"recencyDays":8}},"c936_35_39":{"context":{"adjacencyFitPct":67,"seasonalityFitPct":49,"brandSafePct":70,"competitorAdsNearby":6,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":110,"viewabilityPct":33,"timeInViewSec":2.9,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":3.8,"emotionStrongPct":30,"brandRecallPct":54,"distinctivenessPct":30,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":3.44,"searchLiftPct":12,"sessionsLiftPct":16,"returnVisitorPct":13,"taggedEvents":82000,"dataGapPct":9},"business":{"revenueVsPlanPct":64,"ltvCacRatio":1.8,"cacVsTargetPct":64,"modelConfidencePct":82,"recencyDays":9}},"c936_40_44":{"context":{"adjacencyFitPct":50,"seasonalityFitPct":32,"brandSafePct":53,"competitorAdsNearby":8,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":128,"viewabilityPct":55,"timeInViewSec":4.0,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":3.4,"emotionStrongPct":21,"brandRecallPct":45,"distinctivenessPct":21,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":2.32,"searchLiftPct":4,"sessionsLiftPct":11,"returnVisitorPct":6,"taggedEvents":84000,"dataGapPct":8},"business":{"revenueVsPlanPct":56,"ltvCacRatio":1.4,"cacVsTargetPct":56,"modelConfidencePct":84,"recencyDays":8}},"c936_45_49":{"context":{"adjacencyFitPct":43,"seasonalityFitPct":25,"brandSafePct":46,"competitorAdsNearby":9,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":118,"viewabilityPct":43,"timeInViewSec":3.4,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":3.0,"emotionStrongPct":12,"brandRecallPct":36,"distinctivenessPct":12,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":1.12,"searchLiftPct":0,"sessionsLiftPct":5,"returnVisitorPct":0,"taggedEvents":93000,"dataGapPct":4},"business":{"revenueVsPlanPct":39,"ltvCacRatio":0.8,"cacVsTargetPct":39,"modelConfidencePct":93,"recencyDays":4}},"c1178_30_34":{"context":{"adjacencyFitPct":40,"seasonalityFitPct":22,"brandSafePct":43,"competitorAdsNearby":9,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":82,"viewabilityPct":0,"timeInViewSec":1.1,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":3.1,"emotionStrongPct":14,"brandRecallPct":38,"distinctivenessPct":14,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":2.0,"searchLiftPct":2,"sessionsLiftPct":9,"returnVisitorPct":4,"taggedEvents":93000,"dataGapPct":4},"business":{"revenueVsPlanPct":61,"ltvCacRatio":1.6,"cacVsTargetPct":61,"modelConfidencePct":93,"recencyDays":4}},"c1178_35_39":{"context":{"adjacencyFitPct":52,"seasonalityFitPct":34,"brandSafePct":55,"competitorAdsNearby":8,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":86,"viewabilityPct":2,"timeInViewSec":1.4,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":2.9,"emotionStrongPct":11,"brandRecallPct":35,"distinctivenessPct":11,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":1.52,"searchLiftPct":0,"sessionsLiftPct":7,"returnVisitorPct":1,"taggedEvents":93000,"dataGapPct":4},"business":{"revenueVsPlanPct":35,"ltvCacRatio":0.6,"cacVsTargetPct":35,"modelConfidencePct":93,"recencyDays":4}},"c1178_40_44":{"context":{"adjacencyFitPct":66,"seasonalityFitPct":48,"brandSafePct":69,"competitorAdsNearby":6,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":103,"viewabilityPct":24,"timeInViewSec":2.5,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":2.9,"emotionStrongPct":10,"brandRecallPct":34,"distinctivenessPct":10,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":1.36,"searchLiftPct":0,"sessionsLiftPct":6,"returnVisitorPct":0,"taggedEvents":93000,"dataGapPct":4},"business":{"revenueVsPlanPct":20,"ltvCacRatio":0.0,"cacVsTargetPct":20,"modelConfidencePct":93,"recencyDays":4}},"c1178_45_49":{"context":{"adjacencyFitPct":60,"seasonalityFitPct":42,"brandSafePct":63,"competitorAdsNearby":7,"measuredCoveragePct":55,"recencyDays":15},"attention":{"auIndex":107,"viewabilityPct":29,"timeInViewSec":2.7,"sampleImpressions":1240000,"recencyDays":13},"creative":{"starRating":3.0,"emotionStrongPct":12,"brandRecallPct":36,"distinctivenessPct":12,"panelSize":124,"recencyDays":19},"behavioral":{"conversionRatePct":1.6,"searchLiftPct":0,"sessionsLiftPct":7,"returnVisitorPct":2,"taggedEvents":93000,"dataGapPct":4},"business":{"revenueVsPlanPct":12,"ltvCacRatio":0.0,"cacVsTargetPct":12,"modelConfidencePct":93,"recencyDays":4}}};
-const DSMETA={"c916_30_34":{"label":"FB-916 · 30-34","spend":22,"hint":"257,672 impr · $75 spend · 11 sales · CPA $6.85"},"c916_35_39":{"label":"FB-916 · 35-39","spend":6,"hint":"81,076 impr · $24 spend · 6 sales · CPA $3.94"},"c916_40_44":{"label":"FB-916 · 40-44","spend":1,"hint":"61,977 impr · $17 spend · 4 sales · CPA $4.20"},"c916_45_49":{"label":"FB-916 · 45-49","spend":11,"hint":"82,200 impr · $34 spend · 3 sales · CPA $11.31"},"c936_30_34":{"label":"FB-936 · 30-34","spend":45,"hint":"1,655,949 impr · $391 spend · 88 sales · CPA $4.45"},"c936_35_39":{"label":"FB-936 · 35-39","spend":45,"hint":"1,111,675 impr · $383 spend · 34 sales · CPA $11.28"},"c936_40_44":{"label":"FB-936 · 40-44","spend":47,"hint":"1,203,597 impr · $450 spend · 25 sales · CPA $18.02"},"c936_45_49":{"label":"FB-936 · 45-49","spend":65,"hint":"4,156,966 impr · $1,668 spend · 36 sales · CPA $46.34"},"c1178_30_34":{"label":"FB-1178 · 30-34","spend":95,"hint":"58,892,241 impr · $13,484 spend · 352 sales · CPA $38.31"},"c1178_35_39":{"label":"FB-1178 · 35-39","spend":89,"hint":"34,838,161 impr · $9,386 spend · 144 sales · CPA $65.18"},"c1178_40_44":{"label":"FB-1178 · 40-44","spend":88,"hint":"28,083,860 impr · $8,442 spend · 96 sales · CPA $87.94"},"c1178_45_49":{"label":"FB-1178 · 45-49","spend":92,"hint":"36,208,759 impr · $11,466 spend · 108 sales · CPA $106.16"}};
-
-const COLORS={good:'#38d39f',warn:'#f6c544',bad:'#f06a6a',accent:'#6ea8fe',test:'#b98cf0',dim:'#6b7488'};
-const scoreColor=s=>s>=65?COLORS.good:s>=45?COLORS.warn:COLORS.bad;
+// ---------- qualitative verdict (quant creative vs verbatim sentiment) ----------
+function qualVerdict(id){
+  const cr=ADS[id].creative; if(!cr) return null;
+  const cs=synth('creative',ADS[id]).score, quant=cs>=62?'pos':cs>=48?'mix':'neg', sent=cr.sentiment, quote=cr.verb&&cr.verb[0]?cr.verb[0].q:null;
+  if(sent==='neg'&&quant!=='neg') return {tag:'Conflicting',cls:'ag-conflicting',quote,text:'The ad commands attention, but the verbatims are clearly negative — attention is being bought at the brand’s expense.'};
+  if(sent==='mixed') return {tag:'Polarizing',cls:'ag-mixed',quote,text:'Consumers split sharply — strong positive and strong negative reactions coexist. Proceed with eyes open.'};
+  if(sent==='pos'&&quant==='neg') return {tag:'Conflicting',cls:'ag-conflicting',quote,text:'Verbatims are warm even though the quantitative read is soft — worth a closer look before discarding it.'};
+  if(sent==='pos') return {tag:'Aligned',cls:'ag-aligned',quote,text:'Quantitative testing and consumer verbatims point the same way — a consistent read.'};
+  return {tag:'Mixed',cls:'ag-mixed',quote,text:'Quantitative and qualitative signals partly diverge.'};
+}
 
 // ---------- state ----------
-const state={};
-DOMAINS.forEach(d=>state[d.key]={connected:false,s:0,c:0,raw:null,adj:false});
-state.spend=22; let dataset='c916_30_34';
+const conn={creative:false,brand:false,business:false};
+let ad='budweiser';
 
-// ---------- build connectors ----------
+// ---------- build sources ----------
 const cWrap=document.getElementById('connectors');
-DOMAINS.forEach(d=>{
-  const row=document.createElement('div');row.className='conn';row.id='conn-'+d.key;
-  row.innerHTML=`
-    <div class="conn-top">
-      <div class="clogo" style="background:${d.logo}">${d.src[0]}</div>
-      <div class="cmeta">
-        <div class="csrc">${d.src} <span style="color:var(--dim);font-weight:400">· ${d.name.replace(' Intelligence','')}</span></div>
-        <div class="cdom">${d.cat}</div>
-        <div class="cstatus" id="status-${d.key}">Not connected</div>
-      </div>
-      <div class="cright">
-        <button class="cbtn" id="cbtn-${d.key}" data-k="${d.key}">Connect</button>
-        <span class="inspToggle hidden" id="ins-${d.key}" data-k="${d.key}">inspect ▸</span>
-      </div>
-    </div>
-    <div class="inspect" id="inspect-${d.key}"></div>`;
+CHAIN.forEach(k=>{const c=CATS[k];
+  const row=document.createElement('div');row.className='conn';row.id='conn-'+k;
+  row.innerHTML=`<div class="conn-top"><div class="clogo" style="background:${c.logo}">${c.src[0]}</div>
+    <div class="cmeta"><div class="csrc">${c.src} <span style="color:var(--dim);font-weight:400">· ${c.name}</span></div>
+    <div class="cdom">${c.cat}</div><div class="cstatus" id="status-${k}">Not connected</div></div>
+    <div class="cright"><button class="cbtn" id="cbtn-${k}" data-k="${k}">Connect</button>
+    <span class="inspToggle hidden" id="ins-${k}" data-k="${k}">inspect ▸</span></div></div>
+    <div class="inspect" id="inspect-${k}"></div>`;
   cWrap.appendChild(row);
 });
 cWrap.querySelectorAll('.cbtn').forEach(b=>b.addEventListener('click',()=>toggleConnect(b.dataset.k)));
-cWrap.querySelectorAll('.inspToggle').forEach(t=>t.addEventListener('click',()=>{
-  const k=t.dataset.k, panel=document.getElementById('inspect-'+k), open=panel.classList.toggle('open');
-  t.textContent= open?'inspect ▾':'inspect ▸';
-}));
+cWrap.querySelectorAll('.inspToggle').forEach(t=>t.addEventListener('click',()=>{const k=t.dataset.k,p=document.getElementById('inspect-'+k),o=p.classList.toggle('open');t.textContent=o?'inspect ▾':'inspect ▸';}));
 
-// ---------- manual override sliders ----------
-const domEl=document.getElementById('domains');
-DOMAINS.forEach(d=>{
-  const w=document.createElement('div');w.className='domain';
-  w.innerHTML=`<div class="drow"><span class="dname">${d.name}</span><span class="dval off" id="${d.key}-sval">—</span></div>
-    <input type="range" id="${d.key}-s" min="0" max="100" value="0" disabled>`;
-  domEl.appendChild(w);
-});
-DOMAINS.forEach(d=>{
-  document.getElementById(d.key+'-s').addEventListener('input',e=>{
-    if(!state[d.key].connected)return;
-    state[d.key].s=+e.target.value;state[d.key].adj=true;
-    document.getElementById(d.key+'-sval').textContent=state[d.key].s+' (adj)';
-    document.getElementById('status-'+d.key).innerHTML='<span class="pulled">●</span> manually adjusted';
-    compute();
-  });
-});
-document.getElementById('spend').addEventListener('input',e=>{state.spend=+e.target.value;
-  document.getElementById('spendVal').textContent=state.spend;compute();});
-
-// ---------- selects ----------
-const dsSel=document.getElementById('dataset');
-Object.entries(DSMETA).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.label;dsSel.appendChild(o);});
-dsSel.value='c916_30_34';dsSel.addEventListener('change',()=>{dataset=dsSel.value;
-  document.getElementById('dsHint').textContent=DSMETA[dataset].hint;
-  state.spend=DSMETA[dataset].spend;document.getElementById('spend').value=state.spend;document.getElementById('spendVal').textContent=state.spend;
-  DOMAINS.forEach(d=>{if(state[d.key].connected){state[d.key].adj=false;pull(d.key);}});compute();});
-document.getElementById('dsHint').textContent=DSMETA['c916_30_34'].hint;
-
-const mSel=document.getElementById('market');
-Object.entries(MARKETS).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.label;mSel.appendChild(o);});
-mSel.value='balanced';mSel.addEventListener('change',()=>{document.getElementById('marketHint').textContent=MARKETS[mSel.value].hint;compute();});
-document.getElementById('marketHint').textContent=MARKETS.balanced.hint;
-
-document.getElementById('connectAll').addEventListener('click',()=>{DOMAINS.forEach((d,i)=>{if(!state[d.key].connected)setTimeout(()=>connect(d.key),i*260);});});
-document.getElementById('disconnectAll').addEventListener('click',()=>{DOMAINS.forEach(d=>disconnect(d.key));compute();});
+// ad select
+const adSel=document.getElementById('adSel');
+Object.entries(ADS).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.short+' — '+v.cat;adSel.appendChild(o);});
+adSel.value=ad;adSel.addEventListener('change',()=>{ad=adSel.value;document.getElementById('adHint').textContent=ADS[ad].name;
+  CHAIN.forEach(k=>{if(conn[k])pull(k);});compute();});
+document.getElementById('adHint').textContent=ADS[ad].name;
+document.getElementById('connectAll').addEventListener('click',()=>CHAIN.forEach((k,i)=>{if(!conn[k])setTimeout(()=>connect(k),i*280);}));
+document.getElementById('disconnectAll').addEventListener('click',()=>{CHAIN.forEach(disconnect);compute();});
 
 // ---------- connect ----------
-function toggleConnect(k){state[k].connected?disconnect(k):connect(k);if(!state[k].connected)compute();}
+function toggleConnect(k){conn[k]?disconnect(k):connect(k);if(!conn[k])compute();}
 function connect(k){
   const btn=document.getElementById('cbtn-'+k),st=document.getElementById('status-'+k);
-  document.getElementById('conn-'+k).className='conn connecting';
-  btn.disabled=true;btn.textContent='Syncing';st.innerHTML='<span class="spin"></span>authenticating…';
-  setTimeout(()=>st.innerHTML='<span class="spin"></span>pulling signal…',500);
-  setTimeout(()=>{
-    state[k].connected=true;state[k].adj=false;pull(k);
-    document.getElementById('conn-'+k).className='conn connected';
+  document.getElementById('conn-'+k).className='conn connecting';btn.disabled=true;btn.textContent='Syncing';
+  st.innerHTML='<span class="spin"></span>authenticating…';
+  setTimeout(()=>st.innerHTML='<span class="spin"></span>pulling evidence…',480);
+  setTimeout(()=>{conn[k]=true;pull(k);document.getElementById('conn-'+k).className='conn connected';
     btn.disabled=false;btn.textContent='Connected';btn.className='cbtn connected';
-    document.getElementById('ins-'+k).classList.remove('hidden');
-    document.getElementById(k+'-s').disabled=false;
-    compute();
-  },1000);
+    document.getElementById('ins-'+k).classList.remove('hidden');compute();},980);
 }
-function disconnect(k){
-  state[k]={connected:false,s:0,c:0,raw:null,adj:false};
-  document.getElementById('conn-'+k).className='conn';
+function disconnect(k){conn[k]=false;document.getElementById('conn-'+k).className='conn';
   const btn=document.getElementById('cbtn-'+k);btn.textContent='Connect';btn.className='cbtn';btn.disabled=false;
   document.getElementById('status-'+k).textContent='Not connected';
   const ins=document.getElementById('ins-'+k);ins.classList.add('hidden');ins.textContent='inspect ▸';
-  const panel=document.getElementById('inspect-'+k);panel.classList.remove('open');panel.innerHTML='';
-  const sl=document.getElementById(k+'-s');sl.value=0;sl.disabled=true;
-  const sv=document.getElementById(k+'-sval');sv.textContent='—';sv.className='dval off';
-}
+  const p=document.getElementById('inspect-'+k);p.classList.remove('open');p.innerHTML='';}
 function pull(k){
-  const p=RAW[dataset][k];state[k].raw=p;
-  const {s,c}=normalize(k,p);state[k].s=s;state[k].c=c;
-  const meta=DOMAINS.find(d=>d.key===k);
-  const fresh=c>=50?'synced just now':'stale / low-quality feed';
-  document.getElementById('status-'+k).innerHTML=`<span class="pulled">●</span> normalized to <b>${s}</b>/100 · data quality ${c}% · ${fresh}`;
-  document.getElementById(k+'-s').value=s;
-  const sv=document.getElementById(k+'-sval');sv.textContent=s;sv.className='dval';
-  renderInspect(k);
+  const sy=synth(k,ADS[ad]);
+  const st=document.getElementById('status-'+k);
+  if(!sy.avail){st.innerHTML=`<span class="pulled">●</span> Evidence Unavailable for this ad`;document.getElementById('inspect-'+k).innerHTML=renderInspect(k,sy);return;}
+  st.innerHTML=`<span class="pulled">●</span> ${CATS[k].name} read: <b>${stateWord(sy.score)}</b> · quality ${sy.conf}%`;
+  document.getElementById('inspect-'+k).innerHTML=renderInspect(k,sy);
 }
+const stateWord=s=>s>=62?'Strong':s>=48?'Mixed':'Weak';
 
-// ---------- inspect panel ----------
-function renderInspect(k){
-  const p=state[k].raw, sp=SPEC[k], meta=DOMAINS.find(d=>d.key===k), ew=effW(k);
-  const rawLines=Object.entries(p).map(([key,val])=>`<span class="k">${key}</span>: <span class="v">${val}</span>`).join('\n');
-  const srow=(item,i)=>{const nv=R(item.n(p));
-    return `<div class="normrow"><span class="nl">${item.l}</span><span class="nr">${item.r(p)}</span><span class="nv">${nv}</span>`+
-      `<span class="nw"><input type="number" class="wIn" data-k="${k}" data-i="${i}" min="0" max="1" step="0.05" value="${CALIB[k][i]}"><span class="eff">eff ${ew[i].toFixed(2)}</span></span></div>`;};
-  const crow=item=>`<div class="normrow"><span class="nl">${item.l}</span><span class="nr">${item.r(p)}</span><span class="nv">${R(item.n(p))}</span><span class="nw">×${item.w}</span></div>`;
-  const s=R(sp.score.reduce((a,c,i)=>a+ew[i]*c.n(p),0));
-  const c=R(sp.conf.reduce((a,c)=>a+c.w*c.n(p),0));
-  document.getElementById('inspect-'+k).innerHTML=`
-    <p class="ispH">Raw response · ${meta.src} API</p>
-    <div class="raw">${rawLines}</div>
-    <p class="ispH">Calibrate → domain score · edit weights (auto-normalized to sum 1)</p>
-    ${sp.score.map(srow).join('')}
-    <div class="normtot"><span>Normalized domain score</span><b id="stot-${k}" style="color:${scoreColor(s)}">${s} / 100</b></div>
-    <p class="ispH">Confidence (data quality) — fixed mapping</p>
-    ${sp.conf.map(crow).join('')}
-    <div class="normtot"><span>Data-quality confidence</span><b style="color:${scoreColor(c)}">${c}%</b></div>
-    <div style="margin-top:9px"><span class="reCalib" data-k="${k}">↺ reset weights</span></div>`;
-  document.querySelectorAll(`#inspect-${k} .wIn`).forEach(inp=>inp.addEventListener('input',onCalib));
-  const rc=document.querySelector(`#inspect-${k} .reCalib`);
-  if(rc)rc.addEventListener('click',()=>{CALIB[k]=SPEC[k].score.map(c=>c.w);
-    document.querySelectorAll(`#inspect-${k} .wIn`).forEach((inp,i)=>inp.value=CALIB[k][i]);recalibrate(k);});
-}
-function onCalib(e){const k=e.target.dataset.k,i=+e.target.dataset.i;let v=parseFloat(e.target.value);
-  if(isNaN(v)||v<0)v=0;CALIB[k][i]=v;recalibrate(k);}
-function recalibrate(k){
-  const ew=effW(k), sp=SPEC[k], p=state[k].raw;
-  document.querySelectorAll(`#inspect-${k} .eff`).forEach((el,i)=>el.textContent='eff '+ew[i].toFixed(2));
-  if(p){const s=R(sp.score.reduce((a,c,i)=>a+ew[i]*c.n(p),0));
-    const tot=document.getElementById('stot-'+k);if(tot){tot.textContent=s+' / 100';tot.style.color=scoreColor(s);}
-    if(state[k].connected&&!state[k].adj){state[k].s=s;
-      document.getElementById(k+'-s').value=s;
-      const sv=document.getElementById(k+'-sval');sv.textContent=s;sv.className='dval';
-      document.getElementById('status-'+k).innerHTML=`<span class="pulled">●</span> normalized to <b>${s}</b>/100 · data quality ${state[k].c}% · ${state[k].c>=50?'synced just now':'stale / low-quality feed'}`;}}
-  compute();
-}
-
-// ---------- engine ----------
-let funnelBuilt=false;
-// Pure decision function: shared by the live campaign + the portfolio table.
-function decide(S, has, cis, conf, spend, w, connKeys){
-  const avg=ks=>{const a=ks.filter(has);return a.length?a.reduce((s,k)=>s+S(k),0)/a.length:null;};
-  const up=avg(['context','attention','creative']), down=avg(['behavioral','business']);
-  let rec,color,headline;const why=[];const add=(c,t)=>why.push({c,t});
-  if(conf<45){
-    rec='TEST';color=COLORS.test;headline='Data confidence too low to act — instrument before investing.';
-    add('flag',`Connected evidence quality is only ${conf}%. Recommendations would be guesses.`);
-    add('neu','Improve feed quality/recency or sample size before scaling spend.');
-  } else if(has('business')&&has('behavioral')&&S('business')>=65&&S('behavioral')>=60&&cis>=62){
-    rec='SCALE';color=COLORS.good;headline='The full funnel is working — increase investment.';
-    add('pos',`Business outcomes strong (${S('business')}), backed by real behavior (${S('behavioral')}).`);
-    if(has('attention')&&has('creative'))add('pos',`Upper funnel supports it: attention ${S('attention')}, creative ${S('creative')}.`);
-    add('neu','Scale spend/reach; watch for diminishing returns at higher volume.');
-  } else if(has('creative')&&has('attention')&&S('creative')>=60&&S('attention')<48){
-    rec='OPTIMIZE';color=COLORS.accent;headline='Strong creative almost nobody sees — fix media & placement.';
-    add('pos',`Creative quality is high (${S('creative')}) — don't kill it.`);
-    add('neg',`Attention is the bottleneck (${S('attention')}).`);
-    add('neu','Shift to higher-attention placements/formats before touching the asset.');
-  } else if(has('attention')&&has('creative')&&S('attention')>=55&&S('creative')<48){
-    rec='TEST';color=COLORS.test;headline='The audience sees it but the message falls flat — test new creative.';
-    add('pos',`Attention is there (${S('attention')}).`);add('neg',`Creative isn't converting attention into meaning (${S('creative')}).`);
-    add('neu','Run variants on emotion, clarity, and brand linkage.');
-  } else if(up!==null&&down!==null&&up>=58&&down<50){
-    rec='OPTIMIZE';color=COLORS.accent;headline='Creative lands but the outcome leaks — fix the conversion path.';
-    add('pos',`People notice and respond (upstream avg ${R(up)}).`);add('neg',`Behavior/business fall off (downstream avg ${R(down)}).`);
-    add('neu','Look at landing page, offer, targeting — the creative is not the problem.');
-  } else if(has('business')&&S('business')<40&&spend>=70){
-    rec='STOP';color=COLORS.bad;headline='High spend, no return — stop and reallocate the budget.';
-    add('neg',`Business outcome ${S('business')} against spend level ${spend}.`);
-    add('neu','Reallocate to better-performing activity; revisit only with a new hypothesis.');
-  } else {
-    rec='OPTIMIZE';color=COLORS.accent;headline='Mixed signals — optimize the weakest connected link first.';
-    add('neu',`No domain is clearly carrying the campaign (CIS ${cis}).`);
-    const bl=bottleneck(S,connKeys,w);if(bl)add('flag',`Bottleneck: ${nameOf(bl)} (${S(bl)}). Start there.`);
-    add('neu','Make one targeted change and re-measure before scaling.');
-  }
-  if(connKeys.length<5){
-    const miss=DOMAINS.filter(d=>!connKeys.includes(d.key)).map(d=>d.name.replace(' Intelligence',''));
-    add('flag',`Partial coverage (${connKeys.length}/5). Blind to: ${miss.join(', ')}. This could change once those connect.`);
-  }
-  if(mSel.value!=='balanced')add('neu',`Weighted for "${MARKETS[mSel.value].label}".`);
-  return {rec,color,headline,why};
-}
-function composite(scoreOf,confOf,keys,w){
-  let num=0,den=0,cn=0,cd=0;
-  keys.forEach(k=>{const cf=confOf(k)/100,wt=w[k],eff=wt*(0.5+0.5*cf);num+=scoreOf(k)*eff;den+=eff;cn+=cf*wt;cd+=wt;});
-  return {cis:R(num/den),conf:R(100*cn/cd)};
-}
-function compute(){
-  const w=MARKETS[mSel.value].w;
-  const conn=DOMAINS.filter(d=>state[d.key].connected);
-  const connKeys=conn.map(d=>d.key);
-  document.getElementById('covTxt').textContent=conn.length+'/5';
-  renderFunnel();renderWeights(w);renderTriage();renderChips();
-  const cisEl=document.getElementById('cisScore');
-
-  if(conn.length===0){
-    renderAdvisor(null,0,0,[],null);
-    document.getElementById('missingTxt').textContent='No sources connected. The engine has no evidence to read yet.';
-    highlightBottleneck(null);
-    cisEl.textContent='—';cisEl.style.color=COLORS.dim;
-    return;
-  }
-  const S=k=>state[k].s, has=k=>state[k].connected;
-  const {cis,conf}=composite(S,k=>state[k].c,connKeys,w);
-  const bl=bottleneck(S,connKeys,w);
-  const d=decide(S,has,cis,conf,state.spend,w,connKeys);
-  renderAdvisor(d,cis,conf,connKeys,bl);
-  highlightBottleneck(bl);
-  cisEl.textContent=cis;cisEl.style.color=scoreColor(cis);
-
-  const lowq=conn.filter(d=>state[d.key].c<50).map(d=>d.src);
-  const notConn=DOMAINS.filter(d=>!state[d.key].connected).map(d=>`${d.src} (${d.name.replace(' Intelligence','')})`);
-  let msg=[];
-  if(notConn.length)msg.push(`Not connected: ${notConn.join(', ')} — blind spots.`);
-  if(lowq.length)msg.push(`Lower-confidence (inferred) reads: ${lowq.join(', ')} — treat as hypotheses.`);
-  if(!msg.length)msg.push('All five sources connected with usable data quality. No major blind spots.');
-  document.getElementById('missingTxt').textContent=msg.join(' ');
-}
-function bottleneck(S,connKeys,w){
-  const order=['context','attention','creative','behavioral','business'].filter(k=>connKeys.includes(k));
-  if(!order.length)return null;
-  let bl=null,worst=-1;
-  order.forEach((k,i)=>{const sc=S(k),up=i>0?S(order[i-1]):sc,drop=Math.max(0,up-sc),pen=(100-sc)*w[k]*0.6+drop*0.8;if(pen>worst){worst=pen;bl=k;}});
-  return bl;
-}
-const nameOf=k=>DOMAINS.find(d=>d.key===k).name;
-const faint=s=>scoreColor(s)+'22';
-
-// ---------- advisor language ----------
-const FUNNEL_ORDER=['context','attention','creative','behavioral','business'];
-const ACTION={SCALE:{label:'Scale',color:COLORS.good},OPTIMIZE:{label:'Optimize',color:COLORS.accent},
-  TEST:{label:'Test & learn',color:COLORS.test},STOP:{label:'Stop',color:COLORS.bad}};
-const EVID={
- context:{pos:'a strong contextual fit',mix:'a mixed contextual environment',neg:'a weak contextual fit',unknown:'no contextual read'},
- attention:{pos:'attention well above benchmark',mix:'middling attention',neg:'attention below benchmark',unknown:'no attention read'},
- creative:{pos:'the creative testing strongly',mix:'a mixed creative response',neg:'the creative testing poorly',unknown:'no creative read'},
- behavioral:{pos:'conversion behaviour holding up',mix:'soft post-click behaviour',neg:'weak post-click conversion',unknown:'no behavioural read'},
- business:{pos:'an efficient return on spend',mix:'middling business efficiency',neg:'poor return on spend (high cost per outcome)',unknown:'no business read'},
-};
-function qstate(s,connected,low){
-  if(!connected)return{label:'Evidence Unavailable',cls:'q-unknown',ev:'neu',dot:COLORS.dim};
-  if(s>=62)return{label:low?'Strong (inferred)':'Strong',cls:'q-strong',ev:'pos',dot:COLORS.good};
-  if(s>=48)return{label:low?'Mixed (inferred)':'Mixed',cls:'q-mixed',ev:'mix',dot:COLORS.warn};
-  return{label:low?'Weak (inferred)':'Weak',cls:'q-weak',ev:'neg',dot:COLORS.bad};
-}
-const srcOf=k=>DOMAINS.find(d=>d.key===k).src;
-
-// ---------- qualitative evidence: consumer verbatims (illustrative stand-in for Ace Metrix open-ends) ----------
-const VERB={
-  pos:[{t:'Clear message',p:'~36% of open-ends',q:['I knew right away what they were offering.']},
-       {t:'Emotionally engaging',p:'~22% of open-ends',q:['It actually made me smile — felt genuine.']}],
-  neg:[{t:'Offer confusion',p:'~31% of open-ends',q:["I couldn't tell what they were actually selling."]},
-       {t:'Forgettable',p:'~18% of open-ends',q:['Nothing about it stuck with me.']}],
-  mix:[{t:'Liked, but unclear ask',p:'~27% of open-ends',q:['Nice ad, but what do they want me to do?']},
-       {t:'Some confusion on the offer',p:'~15% of open-ends',q:['Took me a second to get the point.']}],
-};
-// per-campaign verbatim valence (illustrative; would come from real Ace Metrix open-ends)
-const QUAL={c916_30_34:'mix',c916_35_39:'pos',c916_40_44:'pos',c916_45_49:'neg',
-  c936_30_34:'pos',c936_35_39:'pos',c936_40_44:'neg',c936_45_49:null,
-  c1178_30_34:'neg',c1178_35_39:'neg',c1178_40_44:null,c1178_45_49:'neg'};
-
-function renderVerbatims(){
-  if(!state.creative.connected) return '';
-  const head=`<div class="verbHd">Consumer verbatims · ${srcOf('creative')} open-ends <span class="ill">illustrative</span></div>`;
-  const v=QUAL[dataset];
-  if(v===undefined||v===null)
-    return head+`<p style="font-size:12.5px;color:var(--muted);margin:0"><b>Evidence Unavailable</b> — no open-ended responses ingested for this campaign yet.</p>`;
-  return head+VERB[v].map(th=>`<div class="vtheme"><span class="vt-label">${th.t}</span><span class="vt-prev">${th.p}</span></div><div class="vquote">“${th.q[0]}”</div>`).join('');
-}
-// pure verdict for any campaign — used by the UI and the consultant bot
-function qualVerdict(ds){
-  const quant=qstate(normalize('creative',RAW[ds].creative).s,false).ev; // pos / mix / neg
-  const v=QUAL[ds];
-  if(v===undefined||v===null) return {state:'partial',tag:'Quant only',cls:'ag-partial',quote:null,
-    text:'Quantitative creative testing only — no consumer verbatims available to corroborate it yet.'};
-  const quote=VERB[v][0].q[0];
-  if(quant==='pos'&&v!=='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',quote,
-    text:`${srcOf('creative')} rates the creative strongly, but consumers’ own words raise concerns — the sources conflict. The verbatims likely explain the softer downstream behaviour.`};
-  if(quant==='neg'&&v==='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',quote,
-    text:`${srcOf('creative')} rates the creative poorly, yet consumer verbatims are positive — worth a closer look before discarding the creative.`};
-  if((quant==='pos'&&v==='pos')||(quant==='neg'&&v==='neg')) return {state:'aligned',tag:'Aligned',cls:'ag-aligned',quote,
-    text:'Quantitative testing and consumer verbatims point the same way — a consistent read.'};
-  return {state:'mixed',tag:'Mixed',cls:'ag-mixed',quote,
-    text:'Quantitative and qualitative signals are partly consistent, with some divergence worth watching.'};
-}
-function creativeAgreement(){ return state.creative.connected ? qualVerdict(dataset) : null; }
-function renderAgreement(){
-  const a=creativeAgreement();
-  if(!a) return `<div class="agreeRow"><span class="agreeTag ag-partial">—</span>Connect the creative source (${srcOf('creative')}) to weigh quantitative testing against consumer verbatims.</div>`;
-  return `<div class="agreeRow"><span class="agreeTag ${a.cls}">${a.tag}</span>${a.text}</div>`;
-}
-function quoteForRationale(rec){
-  if(!state.creative.connected) return null;
-  const v=QUAL[dataset]; if(v===undefined||v===null) return null;
-  if(rec==='SCALE'&&v==='pos') return VERB.pos[0].q[0];
-  if((rec==='OPTIMIZE'||rec==='TEST'||rec==='STOP')&&v!=='pos') return VERB[v][0].q[0];
-  return null;
-}
-
-// ---------- evidence chips (numbers one tap away) ----------
-function renderChips(){
-  const wrap=document.getElementById('chips');wrap.innerHTML='';
-  FUNNEL_ORDER.forEach(k=>{
-    const dmn=DOMAINS.find(x=>x.key===k), connected=state[k].connected, low=connected&&state[k].c<50;
-    const q=qstate(state[k].s,connected,low);
-    const chip=document.createElement('div');chip.className='chip';
-    chip.innerHTML=`<div class="chipDom">${dmn.name.replace(' Intelligence','')}</div>
-      <div class="chipSrc">${dmn.src}</div>
-      <div class="chipState ${q.cls}"><span class="chipDot" style="background:${q.dot}"></span>${q.label}</div>
-      <div class="chipReveal">${connected?'tap for the numbers →':'tap to connect →'}</div>`;
-    chip.addEventListener('click',()=>chipClick(k));
-    wrap.appendChild(chip);
-  });
-  document.getElementById('chipLegend').innerHTML='Strong / Mixed / Weak are qualitative reads of each source. '+
-    '"(inferred)" = an upper-funnel signal estimated from engagement, carried at lower confidence. '+
-    'Tap any signal to reveal its raw payload and exact score.';
-}
-function chipClick(k){
-  if(!state[k].connected){connect(k);return;}
-  const panel=document.getElementById('inspect-'+k), tog=document.getElementById('ins-'+k);
-  if(!panel.classList.contains('open')){panel.classList.add('open');if(tog)tog.textContent='inspect ▾';}
-  document.getElementById('conn-'+k).scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-// ---------- action triage: every campaign grouped by what to do ----------
-function renderTriage(){
-  const w=MARKETS[mSel.value].w;
-  const groups={SCALE:[],OPTIMIZE:[],TEST:[],STOP:[]};
-  Object.keys(RAW).forEach(ds=>{
-    const sc={};ALL.forEach(k=>sc[k]=normalize(k,RAW[ds][k]));
-    const {cis,conf}=composite(k=>sc[k].s,k=>sc[k].c,ALL,w);
-    const S=k=>sc[k].s, bl=bottleneck(S,ALL.slice(),w);
-    const d=decide(S,()=>true,cis,conf,DSMETA[ds].spend,w,ALL.slice());
-    const reason=conf<45?'data too thin to trust yet':`${nameOf(bl).replace(' Intelligence','')} is the constraint`;
-    (groups[d.rec]||groups.OPTIMIZE).push({ds,label:DSMETA[ds].label,reason,hint:DSMETA[ds].hint});
-  });
-  const wrap=document.getElementById('triage');wrap.innerHTML='';
-  ['SCALE','OPTIMIZE','TEST','STOP'].forEach(rec=>{
-    const items=groups[rec];if(!items.length)return;
-    const A=ACTION[rec];
-    const g=document.createElement('div');g.className='tgroup';
-    g.innerHTML=`<div class="tgHead"><span class="tgBadge" style="background:${A.color};color:#0c0e14">${A.label}</span><span class="tgCount">${items.length} campaign${items.length>1?'s':''}</span></div>`;
-    items.forEach(it=>{
-      const cpa=(it.hint.match(/CPA \$[\d.]+/)||[''])[0];
-      const row=document.createElement('div');row.className='trow';
-      row.innerHTML=`<span class="tname">${it.label}</span><span class="treason">${it.reason}</span><span class="tmetric">${cpa}</span>`;
-      row.addEventListener('click',()=>selectDataset(it.ds));
-      g.appendChild(row);
-    });
-    wrap.appendChild(g);
-  });
-}
-function selectDataset(ds){
-  const sel=document.getElementById('dataset');sel.value=ds;sel.dispatchEvent(new Event('change'));
-  document.querySelector('.hero').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-function renderAdvisor(d,cis,conf,connKeys,bl){
-  const badge=document.getElementById('recBadge');
-  const ev=document.getElementById('evList');
-  if(!d){
-    badge.textContent='—';badge.style.background=COLORS.dim;badge.style.color='#fff';
-    document.getElementById('recCard').style.borderColor='var(--line)';
-    document.getElementById('recHeadline').textContent='Connect data sources to begin.';
-    ev.innerHTML='<li class="neu">No evidence ingested yet.</li>';
-    document.getElementById('verbBlock').innerHTML='';
-    document.getElementById('agreeBlock').innerHTML='';
-    document.getElementById('blNote').textContent='—';
-    document.getElementById('nextAction').textContent='—';
-    document.getElementById('confFill').style.width='0';document.getElementById('confTxt').textContent='—';
-    return;
-  }
-  const A=ACTION[d.rec]||{label:d.rec,color:COLORS.accent};
-  badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
-  document.getElementById('recCard').style.borderColor=A.color;
-  document.getElementById('recHeadline').textContent=d.headline;
-  // STAGE 1 — Evidence: source-cited quantitative reads, in funnel order
-  ev.innerHTML='';
-  FUNNEL_ORDER.forEach(k=>{
-    const connected=state[k].connected, low=connected&&state[k].c<50, q=qstate(state[k].s,connected,low), E=EVID[k];
-    let txt;
-    if(!connected) txt=`<span class="srcname">${srcOf(k)}</span> — evidence unavailable (source not connected).`;
-    else txt=`<span class="srcname">${srcOf(k)}</span> shows ${E[q.ev]}${low?' <span style="color:var(--dim)">(inferred, lower confidence)</span>':''}.`;
-    const li=document.createElement('li');li.className=connected?q.ev:'neu';li.innerHTML=txt;ev.appendChild(li);
-  });
-  // STAGE 1 — qualitative evidence (verbatims)
-  document.getElementById('verbBlock').innerHTML=renderVerbatims();
-  // STAGE 2 — Interpretation: source agreement/conflict + the constraint
-  document.getElementById('agreeBlock').innerHTML=renderAgreement();
-  document.getElementById('blNote').innerHTML = bl
-    ? `Reading it together, the constraint looks like <b>${nameOf(bl).replace(' Intelligence','')}</b> — the weakest link given how the rest of the funnel reads.`
-    : 'No single constraint stands out — the read is broadly consistent across the funnel.';
-  // STAGE 3 — Recommendation: next action, with a consumer quote as rationale where it fits
-  const act=d.why.find(x=>x.c==='neu');
-  const q=quoteForRationale(d.rec);
-  document.getElementById('nextAction').innerHTML=(act?act.t:d.headline)+(q?`<span class="raquote">In consumers’ own words: “${q}”</span>`:'');
-  document.getElementById('confFill').style.width=conf+'%';
-  document.getElementById('confFill').style.background=conf>=65?COLORS.good:conf>=45?COLORS.warn:COLORS.bad;
-  document.getElementById('confTxt').textContent=conf+'% '+(conf>=65?'· solid':conf>=45?'· moderate':'· thin');
-}
-function renderFunnel(){
-  const order=['context','attention','creative','behavioral','business'];
-  const f=document.getElementById('funnel');
-  if(!funnelBuilt){f.innerHTML='';order.forEach(k=>{const row=document.createElement('div');row.className='fstage';row.id='f-'+k;
-    row.innerHTML=`<div class="fbar" id="fbar-${k}"></div><div class="flabel">${nameOf(k).replace(' Intelligence','')}</div><div class="fscore" id="fscore-${k}"></div>`;
-    f.appendChild(row);});funnelBuilt=true;}
-  order.forEach(k=>{const row=document.getElementById('f-'+k),bar=document.getElementById('fbar-'+k),sc=document.getElementById('fscore-'+k);
-    if(state[k].connected){row.className='fstage';bar.style.width=state[k].s+'%';bar.style.background=scoreColor(state[k].s);
-      sc.textContent=state[k].s+(state[k].c<50?' · low conf':'');}
-    else{row.className='fstage empty';bar.style.width='0';sc.textContent='not connected';}});
-}
-function highlightBottleneck(k){
-  document.querySelectorAll('.fstage').forEach(el=>el.classList.remove('bottleneck'));
-  if(k){const el=document.getElementById('f-'+k);if(el)el.classList.add('bottleneck');}
-}
-function renderWeights(w){const chips=document.getElementById('weightChips');chips.innerHTML='';
-  DOMAINS.forEach(d=>{const c=document.createElement('span');c.className='wchip';c.innerHTML=`${d.name.split(' ')[0]} <b>${w[d.key].toFixed(1)}×</b>`;chips.appendChild(c);});}
-
-// ================= CONSULTANT BOT (grounded in the engine — never invents) =================
-const domShort=k=>nameOf(k).replace(' Intelligence','');
-function campaignRecord(ds){
-  const w=MARKETS[mSel.value].w, sc={};
-  ALL.forEach(k=>sc[k]=normalize(k,RAW[ds][k]));
-  const {cis,conf}=composite(k=>sc[k].s,k=>sc[k].c,ALL,w);
-  const S=k=>sc[k].s, bl=bottleneck(S,ALL.slice(),w);
-  const d=decide(S,()=>true,cis,conf,DSMETA[ds].spend,w,ALL.slice());
-  return {ds,label:DSMETA[ds].label,sc,cis,conf,bl,rec:d.rec,headline:d.headline,why:d.why};
-}
-function whatIf(ds,dk,dir){
-  const w=MARKETS[mSel.value].w, sc={};
-  ALL.forEach(k=>sc[k]=normalize(k,RAW[ds][k]));
-  const base=campaignRecord(ds), nv=dir==='strong'?72:35, S=k=>k===dk?nv:sc[k].s;
-  const {cis,conf}=composite(S,k=>sc[k].c,ALL,w);
-  const d=decide(S,()=>true,cis,conf,DSMETA[ds].spend,w,ALL.slice());
-  return {base,newRec:d.rec,changed:d.rec!==base.rec};
-}
-function whyAnswer(rec){
-  let out=`<b>${rec.label} → ${ACTION[rec.rec].label}.</b> ${rec.headline}<br><br>The evidence behind it:<ul class="botul">`;
-  FUNNEL_ORDER.forEach(k=>{const low=rec.sc[k].c<50,qq=qstate(rec.sc[k].s,true,low);
-    out+=`<li>${srcOf(k)}: ${EVID[k][qq.ev]}${low?' <i>(inferred)</i>':''}</li>`;});
-  out+='</ul>';
-  const v=qualVerdict(rec.ds);
-  if(v.tag==='Conflicting'){out+=`And a <b>conflict</b> worth noting: ${v.text}`;if(v.quote)out+=`<span class="botquote">“${v.quote}”</span>`;}
-  out+=`The constraint is <b>${domShort(rec.bl)}</b>. `;
-  const act=rec.why.find(x=>x.c==='neu'); if(act)out+=`Next: ${act.t}`;
+function renderInspect(k,sy){
+  if(!sy.avail) return `<p class="ispH">${CATS[k].src} · ${CATS[k].name}</p><p style="font-size:12.5px;color:var(--muted);margin:0"><b>Evidence Unavailable</b> — this source has no data for this campaign.</p>`;
+  const bar=(v)=>{const col=scoreColor(v);return `<div class="mbar"><div class="mfill" style="left:0;width:${v}%;background:${col}"></div><div class="mnorm"></div></div>`;};
+  let out=`<p class="ispH">${CATS[k].src} · measures (indexed vs category norm; 50 = norm) <span class="ill">illustrative</span></p>`;
+  sy.measures.forEach(([n,v])=>{out+=`<div class="mrow"><span class="mname">${n}</span>${bar(v)}<span class="mval" style="color:${scoreColor(v)}">${v}</span></div>`;});
+  out+=`<div class="normtot"><span>Synthesized ${CATS[k].name} read</span><b style="color:${scoreColor(sy.score)}">${stateWord(sy.score)} · ${sy.score}</b></div>`;
+  if(k==='creative'&&sy.verb){out+=`<p class="ispH">Consumer verbatims (the emotional metrics are derived from these)</p>`;
+    sy.verb.forEach(t=>out+=`<div class="vtheme"><span class="vt-label">${t.t}</span><span class="vt-prev">${t.p}</span></div><div class="vquote">“${t.q}”</div>`);}
   return out;
 }
+
+// ---------- evidence phrasing ----------
+const EVID={
+  creative:{pos:'the creative is working — it earns attention and affinity',mix:'a mixed creative response',neg:'the creative isn’t landing'},
+  brand:{pos:'the brand is sticking — strong recall and intent',mix:'middling brand impact',neg:'the brand isn’t sticking — recall and linkage are below norm'},
+  business:{pos:'outcomes are following through',mix:'middling business outcomes',neg:'weak business outcomes'},
+};
+const evWord=s=>s>=62?'pos':s>=48?'mix':'neg';
+
+// ---------- compute / render ----------
+function compute(){
+  const connKeys=CHAIN.filter(k=>conn[k]);
+  const keys=connKeys.filter(k=>synth(k,ADS[ad]).avail);
+  document.getElementById('covTxt').textContent=connKeys.length+'/3';
+  renderChips();renderTriage();
+  const cisEl=document.getElementById('cisScore');
+  if(keys.length===0){renderAdvisor(null);
+    document.getElementById('missingTxt').textContent= connKeys.length? 'Connected sources have no usable evidence for this ad.' : 'No evidence connected. Nothing to synthesize yet.';
+    renderFunnel(null);cisEl.textContent='—';cisEl.style.color=COLORS.dim;return;}
+  const ev=evaluate(ad,keys);
+  renderAdvisor(ev);renderFunnel(ev);
+  cisEl.textContent=ev.cis;cisEl.style.color=scoreColor(ev.cis);
+  // missing
+  const notConn=CHAIN.filter(k=>!conn[k]).map(k=>CATS[k].src+' ('+CATS[k].name.replace(' Evidence','')+')');
+  const unavail=connKeys.filter(k=>!synth(k,ADS[ad]).avail).map(k=>CATS[k].name);
+  let msg=[];
+  if(notConn.length)msg.push(`Not connected: ${notConn.join(', ')}.`);
+  if(unavail.length)msg.push(`Evidence Unavailable: ${unavail.join(', ')} — outcomes can’t be judged for this ad.`);
+  if(!msg.length)msg.push('All three evidence categories connected and available.');
+  document.getElementById('missingTxt').textContent=msg.join(' ');
+}
+function renderAdvisor(ev){
+  const badge=document.getElementById('recBadge'), evl=document.getElementById('evList');
+  if(!ev){badge.textContent='—';badge.style.background=COLORS.dim;badge.style.color='#fff';
+    document.getElementById('recCard').style.borderColor='var(--line)';
+    document.getElementById('recHeadline').textContent='Connect evidence to begin.';
+    evl.innerHTML='<li class="neu">No evidence connected yet.</li>';
+    document.getElementById('verbBlock').innerHTML='';document.getElementById('agreeBlock').innerHTML='';
+    document.getElementById('blNote').textContent='—';document.getElementById('nextAction').textContent='—';
+    document.getElementById('confFill').style.width='0';document.getElementById('confTxt').textContent='—';return;}
+  const A=ACTION[ev.rec];
+  badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
+  document.getElementById('recCard').style.borderColor=A.color;
+  document.getElementById('recHeadline').textContent=ev.headline;
+  // STAGE 1 evidence
+  evl.innerHTML='';
+  CHAIN.forEach(k=>{
+    if(!conn[k]){const li=document.createElement('li');li.className='neu';li.innerHTML=`<span class="srcname">${CATS[k].src}</span> — not connected.`;evl.appendChild(li);return;}
+    const sy=synth(k,ADS[ad]);
+    const li=document.createElement('li');
+    if(!sy.avail){li.className='neu';li.innerHTML=`<span class="srcname">${CATS[k].src}</span> — <b>Evidence Unavailable</b> for this campaign.`;}
+    else{const w=evWord(sy.score);li.className=w;li.innerHTML=`<span class="srcname">${CATS[k].src}</span> shows ${EVID[k][w]}.`;}
+    evl.appendChild(li);
+  });
+  // verbatims
+  document.getElementById('verbBlock').innerHTML=conn.creative&&synth('creative',ADS[ad]).avail?renderVerb():'';
+  // STAGE 2 interpretation
+  const v=conn.creative&&synth('creative',ADS[ad]).avail?qualVerdict(ad):null;
+  document.getElementById('agreeBlock').innerHTML = v
+    ? `<div class="agreeRow"><span class="agreeTag ${v.cls}">${v.tag}</span>${v.text}</div>`
+    : `<div class="agreeRow"><span class="agreeTag ag-partial">—</span>Connect ${CATS.creative.src} to weigh the quantitative creative read against consumer verbatims.</div>`;
+  document.getElementById('blNote').innerHTML = ev.bl
+    ? `Reading the chain together, it breaks down at <b>${CATS[ev.bl].name}</b> — that's the stage holding everything else back.`
+    : 'The chain reads consistently — no single stage stands out as the constraint.';
+  // STAGE 3 recommendation
+  const q=(ev.rec!=='SCALE'&&v&&v.quote)?v.quote:(ev.rec==='SCALE'&&v&&v.tag==='Aligned'&&v.quote?v.quote:null);
+  document.getElementById('nextAction').innerHTML=ev.action+(q?`<span class="raquote">In consumers’ own words: “${q}”</span>`:'');
+  document.getElementById('confFill').style.width=ev.conf+'%';
+  document.getElementById('confFill').style.background=ev.conf>=65?COLORS.good:ev.conf>=45?COLORS.warn:COLORS.bad;
+  document.getElementById('confTxt').textContent=ev.conf+'% '+(ev.conf>=65?'· solid':ev.conf>=45?'· moderate':'· thin');
+}
+function renderVerb(){
+  const sy=synth('creative',ADS[ad]);
+  let out=`<div class="verbHd">Consumer verbatims · ${CATS.creative.src} open-ends <span class="ill">illustrative</span></div>`;
+  sy.verb.forEach(t=>out+=`<div class="vtheme"><span class="vt-label">${t.t}</span><span class="vt-prev">${t.p}</span></div><div class="vquote">“${t.q}”</div>`);
+  return out;
+}
+function chipState(k){
+  if(!conn[k]) return {label:'Tap to connect',cls:'q-unknown',dot:COLORS.dim};
+  const sy=synth(k,ADS[ad]);
+  if(!sy.avail) return {label:'Evidence Unavailable',cls:'q-unknown',dot:COLORS.dim};
+  const w=evWord(sy.score);
+  return {label:w==='pos'?'Strong':w==='mix'?'Mixed':'Weak',cls:w==='pos'?'q-strong':w==='mix'?'q-mixed':'q-weak',dot:scoreColor(sy.score)};
+}
+function renderChips(){
+  const wrap=document.getElementById('chips');wrap.innerHTML='';
+  CHAIN.forEach(k=>{const c=CATS[k],q=chipState(k);
+    const chip=document.createElement('div');chip.className='chip';
+    chip.innerHTML=`<div class="chipDom">${c.name}</div><div class="chipSrc">${c.src}</div>
+      <div class="chipState ${q.cls}"><span class="chipDot" style="background:${q.dot}"></span>${q.label}</div>
+      <div class="chipReveal">${conn[k]?'tap for the measures →':'tap to connect →'}</div>`;
+    chip.addEventListener('click',()=>chipClick(k));wrap.appendChild(chip);});
+  document.getElementById('chipLegend').innerHTML='Each category is a synthesis of its underlying measures. Tap to open the source and see every measure indexed against category norm, plus the verbatims behind the emotional scores.';
+}
+function chipClick(k){if(!conn[k]){connect(k);return;}
+  const p=document.getElementById('inspect-'+k),t=document.getElementById('ins-'+k);
+  if(!p.classList.contains('open')){p.classList.add('open');if(t)t.textContent='inspect ▾';}
+  document.getElementById('conn-'+k).scrollIntoView({behavior:'smooth',block:'center'});}
+function renderTriage(){
+  const groups={SCALE:[],OPTIMIZE:[],TEST:[],STOP:[]};
+  Object.keys(ADS).forEach(id=>{const ev=evaluate(id,availOf(id));
+    const reason= ev.sentiment==='neg'?'negative consumer sentiment': ev.bl?CATS[ev.bl].name.replace(' Evidence','')+' is the constraint':'broadly consistent';
+    groups[ev.rec].push({id,name:ADS[id].short,reason});});
+  const wrap=document.getElementById('triage');wrap.innerHTML='';
+  ['SCALE','OPTIMIZE','TEST','STOP'].forEach(rec=>{const items=groups[rec];if(!items.length)return;const A=ACTION[rec];
+    const g=document.createElement('div');g.className='tgroup';
+    g.innerHTML=`<div class="tgHead"><span class="tgBadge" style="background:${A.color};color:#0c0e14">${A.label}</span><span class="tgCount">${items.length} campaign${items.length>1?'s':''}</span></div>`;
+    items.forEach(it=>{const row=document.createElement('div');row.className='trow';
+      row.innerHTML=`<span class="tname">${it.name}</span><span class="treason">${it.reason}</span>`;
+      row.addEventListener('click',()=>{adSel.value=it.id;adSel.dispatchEvent(new Event('change'));document.getElementById('recCard').scrollIntoView({behavior:'smooth',block:'start'});});
+      g.appendChild(row);});
+    wrap.appendChild(g);});
+}
+let funnelBuilt=false;
+function renderFunnel(ev){
+  const f=document.getElementById('funnel');
+  if(!funnelBuilt){f.innerHTML='';CHAIN.forEach((k,i)=>{
+    const row=document.createElement('div');row.className='fstage';row.id='f-'+k;
+    row.innerHTML=`<div class="fbar" id="fbar-${k}"></div><div class="flabel">${CATS[k].name}</div><div class="fscore" id="fscore-${k}"></div>`;
+    f.appendChild(row);
+    if(i<CHAIN.length-1){const a=document.createElement('div');a.className='farrow';a.textContent='↓';f.appendChild(a);}});funnelBuilt=true;}
+  CHAIN.forEach(k=>{const row=document.getElementById('f-'+k),bar=document.getElementById('fbar-'+k),sc=document.getElementById('fscore-'+k);
+    const connected=conn[k],sy=connected?synth(k,ADS[ad]):null;
+    if(connected&&sy.avail){row.className='fstage';bar.style.width=sy.score+'%';bar.style.background=scoreColor(sy.score);sc.textContent=stateWord(sy.score)+' · '+sy.score;}
+    else{row.className='fstage empty';bar.style.width='0';sc.textContent=connected?'Evidence Unavailable':'not connected';}});
+  document.querySelectorAll('.fstage').forEach(el=>el.classList.remove('bottleneck'));
+  if(ev&&ev.bl){const el=document.getElementById('f-'+ev.bl);if(el)el.classList.add('bottleneck');}
+}
+
+// ================= CONSULTANT BOT (grounded; never invents) =================
+function whatIf(id,dk,dir){const keys=availOf(id);const base=evaluate(id,keys);
+  const ad2=ADS[id], s={};keys.forEach(k=>s[k]=synth(k,ad2));const nv=dir==='strong'?72:35;
+  const S=k=>k===dk?nv:s[k].score, has=k=>keys.includes(k);
+  const sentiment=(dk==='creative')?(dir==='strong'?'pos':'neg'):(keys.includes('creative')?ad2.creative.sentiment:'pos');
+  const conf=base.conf;const d=decide(S,has,sentiment,conf,ad2.spend);
+  return {base,newRec:d.rec};}
+function whyAnswer(ev,id){
+  let out=`<b>${ADS[id].short} → ${ACTION[ev.rec].label}.</b> ${ev.headline}<br><br>The evidence chain:<ul class="botul">`;
+  CHAIN.forEach(k=>{const sy=ev.s[k];if(!sy){out+=`<li>${CATS[k].src}: not connected</li>`;return;}
+    out+=`<li>${CATS[k].src}: ${EVID[k][evWord(sy.score)]}</li>`;});
+  out+='</ul>';
+  const v=qualVerdict(id);
+  if(v&&(v.tag==='Conflicting'||v.tag==='Polarizing')){out+=`Interpretation — <b>${v.tag}</b>: ${v.text}`;if(v.quote)out+=`<span class="botquote">“${v.quote}”</span>`;}
+  if(ev.bl)out+=`The chain breaks at <b>${CATS[ev.bl].name}</b>. `;
+  out+='Next: '+ev.action;return out;
+}
 function askConsultant(qRaw){
-  const q=qRaw.toLowerCase().trim();
-  const rec=campaignRecord(dataset);
+  const q=qRaw.toLowerCase().trim(), keys=availOf(ad), ev=evaluate(ad,keys);
   if(q===''||/^(help|hi|hello|hey|what can you|who are you)/.test(q))
-    return `I'm the CIS consultant. I answer <b>only from the evidence CIS has synthesized</b> for these campaigns — I won't guess. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What's the conflict here?”</li><li>“What if attention improves?”</li><li>“Which campaigns should I stop?”</li><li>“Summarize my portfolio.”</li></ul>`;
-  // portfolio summary
-  if(/(portfolio|summar|overview|all campaign|triage|book|the whole|everything)/.test(q)){
-    const g={SCALE:[],OPTIMIZE:[],TEST:[],STOP:[]};
-    Object.keys(RAW).forEach(x=>{g[campaignRecord(x).rec].push(DSMETA[x].label);});
-    let out=`Across all ${Object.keys(RAW).length} campaigns:<ul class="botul">`;
+    return `I'm the CIS consultant. I answer <b>only from the evidence CIS has synthesized</b> — never guesswork. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What do consumers say?”</li><li>“What if the brand link improves?”</li><li>“Which ads should I stop?”</li><li>“Summarize the portfolio.”</li></ul>`;
+  if(/(portfolio|summar|overview|all (ad|campaign)|triage|everything)/.test(q)){
+    const g={SCALE:[],OPTIMIZE:[],TEST:[],STOP:[]};Object.keys(ADS).forEach(id=>g[evaluate(id,availOf(id)).rec].push(ADS[id].short));
+    let out=`Across all ${Object.keys(ADS).length} ads:<ul class="botul">`;
     ['SCALE','OPTIMIZE','TEST','STOP'].forEach(r=>{if(g[r].length)out+=`<li><b>${ACTION[r].label}</b> (${g[r].length}): ${g[r].join(', ')}</li>`;});
-    return out+'</ul>The clearest moves: stop the campaigns burning spend with no return, scale the efficient ones. Ask me “why” about any of them.';
+    return out+'</ul>The interesting ones are the “Optimize” cases — strong, well-liked ads that aren’t sticking to the brand. Ask “why” about any of them.';
   }
-  // which to scale/stop/test/optimize
   for(const [kw,r] of [['scale','SCALE'],['stop','STOP'],['optimi','OPTIMIZE']]){
     if(q.includes(kw)&&!/what if|improve|fix|better|worse/.test(q)){
-      const list=Object.keys(RAW).map(campaignRecord).filter(x=>x.rec===r);
-      if(!list.length) return `No campaigns currently fall under <b>${ACTION[r].label}</b>.`;
-      return `<b>${ACTION[r].label}</b> — ${list.length} campaign${list.length>1?'s':''}:<ul class="botul">`+
-        list.map(x=>`<li>${x.label} — ${x.conf<45?'data too thin to trust yet':domShort(x.bl)+' is the constraint'}</li>`).join('')+'</ul>';
+      const list=Object.keys(ADS).map(id=>({id,ev:evaluate(id,availOf(id))})).filter(x=>x.ev.rec===r);
+      if(!list.length)return `No ads currently fall under <b>${ACTION[r].label}</b>.`;
+      return `<b>${ACTION[r].label}</b> — ${list.length}:<ul class="botul">`+list.map(x=>`<li>${ADS[x.id].short} — ${x.ev.sentiment==='neg'?'negative sentiment':x.ev.bl?CATS[x.ev.bl].name.replace(' Evidence','')+' constraint':'consistent'}</li>`).join('')+'</ul>';
     }
   }
-  // what-if
   if(/what if|what would happen|suppose|if .*(improve|fix|increase|raise|boost|worsen|drop|lower|reduce|better|worse)/.test(q)){
-    const dk=/attention/.test(q)?'attention':/creativ|\bad\b|message/.test(q)?'creative':/context/.test(q)?'context':
-      /behavi|conversion|click/.test(q)?'behavioral':/business|revenue|cpa|roi|cost|spend/.test(q)?'business':null;
-    if(!dk) return `Happy to model a what-if — just name the lever. e.g. “what if <b>attention</b> improves?” or “what if <b>creative</b> gets worse?”`;
-    const dir=/(worse|drop|lower|reduce|weak|decline|down|fail)/.test(q)?'weak':'strong';
-    const wi=whatIf(dataset,dk,dir), verb=dir==='strong'?'improved to Strong':'fell to Weak';
-    if(wi.changed) return `If <b>${domShort(dk)}</b> ${verb} on <b>${rec.label}</b>, the recommendation would shift from <b>${ACTION[rec.rec].label}</b> to <b>${ACTION[wi.newRec].label}</b>.<span class="botnote">Computed by re-running the engine on the changed input — not estimated.</span>`;
-    return `If <b>${domShort(dk)}</b> ${verb} on <b>${rec.label}</b>, the call would stay <b>${ACTION[rec.rec].label}</b> — ${dk===rec.bl?'it eases the main constraint, but not enough alone to change the decision':'the constraint is elsewhere ('+domShort(rec.bl)+'), so this lever alone doesn’t move it'}.<span class="botnote">Computed by re-running the engine.</span>`;
+    const dk=/brand|recall|linkage|stick/.test(q)?'brand':/business|sales|outcome|conversion|revenue/.test(q)?'business':/creativ|\bad\b|attention|likab|emotion/.test(q)?'creative':null;
+    if(!dk)return `Name the lever and I'll model it — e.g. “what if <b>brand linkage</b> improves?” or “what if <b>creative</b> gets worse?”`;
+    if(!keys.includes(dk))return `${CATS[dk].name} is Evidence Unavailable for ${ADS[ad].short}, so I can't model that lever here.`;
+    const dir=/(worse|drop|lower|reduce|weak|decline|down|fail)/.test(q)?'weak':'strong', wi=whatIf(ad,dk,dir), verb=dir==='strong'?'improved to Strong':'fell to Weak';
+    if(wi.base.rec!==wi.newRec)return `If <b>${CATS[dk].name}</b> ${verb} on <b>${ADS[ad].short}</b>, the recommendation would shift from <b>${ACTION[wi.base.rec].label}</b> to <b>${ACTION[wi.newRec].label}</b>.<span class="botnote">Computed by re-running the engine — not estimated.</span>`;
+    return `If <b>${CATS[dk].name}</b> ${verb} on <b>${ADS[ad].short}</b>, the call would stay <b>${ACTION[wi.base.rec].label}</b>.<span class="botnote">Computed by re-running the engine.</span>`;
   }
-  // conflict / verbatims
-  if(/(conflict|verbatim|consumer|qualitative|open.?end|what.*(say|said|think)|disagree|agree|aligned)/.test(q)){
-    const v=qualVerdict(dataset);
-    return `On <b>${rec.label}</b>, the creative read is <b>${v.tag}</b>: ${v.text}`+(v.quote?`<span class="botquote">“${v.quote}”</span>`:'');
+  if(/(conflict|verbatim|consumer|qualitative|what.*(say|said|think)|sentiment|emotion|disagree|agree|polariz)/.test(q)){
+    if(!conn.creative||!synth('creative',ADS[ad]).avail)return `No creative evidence is connected for ${ADS[ad].short}, so I have no verbatims to read.`;
+    const v=qualVerdict(ad),sy=synth('creative',ADS[ad]);
+    let out=`On <b>${ADS[ad].short}</b>, the creative read is <b>${v.tag}</b>: ${v.text}`;
+    if(sy.emotions)out+=`<br>Top emotional signal: <b>${sy.emotions[0][0]}</b> (${sy.emotions[0][1]} vs norm).`;
+    if(v.quote)out+=`<span class="botquote">“${v.quote}”</span>`;return out;
   }
-  // confidence
-  if(/(confiden|how sure|trust|reliable|data quality|thin|certain)/.test(q)){
-    const lowq=ALL.filter(k=>rec.sc[k].c<50).map(srcOf);
-    return `Evidence quality on <b>${rec.label}</b> is <b>${rec.conf}%</b> (${rec.conf>=65?'solid':rec.conf>=45?'moderate':'thin'}).`+
-      (lowq.length?` Lower-confidence / inferred reads: ${lowq.join(', ')} — treat those as hypotheses.`:' All reads are usable quality.');
+  if(/(bottleneck|weakest|breaking down|constraint|the problem|brand link|forgettable)/.test(q)){
+    if(!ev.bl)return `Nothing connected yet for ${ADS[ad].short}.`;
+    return `On <b>${ADS[ad].short}</b>, the chain breaks at <b>${CATS[ev.bl].name}</b> — that's where I'd focus first. ${ev.action}`;
   }
-  // bottleneck
-  if(/(bottleneck|weakest|breaking down|constraint|the problem|whats wrong|what.s wrong)/.test(q)){
-    return `On <b>${rec.label}</b>, the constraint is <b>${domShort(rec.bl)}</b> — the weakest link given how the rest of the funnel reads. That's where I'd focus first.`;
+  if(/(confiden|how sure|trust|reliable|quality|thin|certain)/.test(q))
+    return `Evidence quality on <b>${ADS[ad].short}</b> is <b>${ev.conf}%</b> (${ev.conf>=65?'solid':ev.conf>=45?'moderate':'thin'}).`+(keys.length<3?` Note: ${CHAIN.filter(k=>!keys.includes(k)).map(k=>CATS[k].name).join(', ')} ${keys.length<2?'are':'is'} not in evidence here.`:'');
+  if(/(why|explain|reason|justif|rationale|recommend|what should|do next|tell me|this (ad|campaign))/.test(q)){
+    if(!keys.length)return `Connect some evidence for ${ADS[ad].short} and I'll explain the read.`;
+    return whyAnswer(ev,ad);
   }
-  // why / explain (default for the selected campaign)
-  if(/(why|explain|reason|justif|rationale|recommend|what should|do next|tell me|this campaign)/.test(q))
-    return whyAnswer(rec);
-  // refuse — stay inside the evidence
-  return `I can only answer from the evidence CIS has synthesized for these campaigns — I don't have evidence on that. Try “why this recommendation?”, “what's the conflict?”, a what-if (“what if attention improves?”), or “summarize my portfolio.”`;
+  return `I can only answer from the evidence CIS has synthesized for these ads — I don't have evidence on that. Try “why this recommendation?”, “what do consumers say?”, a what-if (“what if brand linkage improves?”), or “summarize the portfolio.”`;
 }
-// wiring
 (function(){
-  const panel=document.getElementById('botPanel'), msgs=document.getElementById('botMsgs'), fab=document.getElementById('botFab'), input=document.getElementById('botInput');
+  const panel=document.getElementById('botPanel'),msgs=document.getElementById('botMsgs'),fab=document.getElementById('botFab'),input=document.getElementById('botInput');
   const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   function add(html,who){const m=document.createElement('div');m.className='bmsg '+who;m.innerHTML=html;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight;}
   function send(text){const t=(text!==undefined?text:input.value).trim();if(!t)return;add(esc(t),'user');input.value='';setTimeout(()=>add(askConsultant(t),'bot'),200);}
   fab.addEventListener('click',()=>{panel.classList.add('open');fab.style.display='none';
-    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm the CIS consultant, currently looking at <b>${DSMETA[dataset].label}</b>. I answer only from the evidence CIS has synthesized. Ask me why, a what-if, or for a portfolio summary.`,'bot');}
-    input.focus();});
+    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm the CIS consultant, currently looking at <b>${ADS[ad].short}</b>. I answer only from the evidence CIS has synthesized. Ask me why, a what-if, or for a portfolio summary.`,'bot');}input.focus();});
   document.getElementById('botClose').addEventListener('click',()=>{panel.classList.remove('open');fab.style.display='block';});
   document.getElementById('botSend').addEventListener('click',()=>send());
   input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
   const chips=document.getElementById('botChips');
-  [['Why this recommendation?','Why this recommendation?'],['What’s the conflict?','What is the conflict on this campaign?'],['What if attention improves?','What if attention improves?'],['Summarize my portfolio','Summarize my portfolio']]
+  [['Why this recommendation?','Why this recommendation?'],['What do consumers say?','What do consumers say about this ad?'],['What if brand link improves?','What if brand linkage improves?'],['Summarize the portfolio','Summarize the portfolio']]
     .forEach(([lbl,qq])=>{const c=document.createElement('span');c.className='botChip';c.textContent=lbl;c.addEventListener('click',()=>send(qq));chips.appendChild(c);});
 })();
 

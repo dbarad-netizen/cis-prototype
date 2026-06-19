@@ -222,6 +222,31 @@
   .hoodLbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:7px}
   footer{color:var(--dim);font-size:11px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
   .full{grid-column:1/-1}
+  /* consultant bot */
+  .botFab{position:fixed;right:20px;bottom:20px;z-index:50;background:var(--accent);color:#0c0e14;font-weight:700;
+    font-size:13px;padding:12px 16px;border-radius:24px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+  .botFab:active{transform:translateY(1px)}
+  .botPanel{position:fixed;right:20px;bottom:20px;z-index:51;width:372px;max-width:calc(100vw - 32px);
+    height:72vh;max-height:640px;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    display:none;flex-direction:column;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+  .botPanel.open{display:flex}
+  .botHead{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid var(--line)}
+  .botHead b{font-size:14px} .botSub{font-size:10.5px;color:var(--dim);margin-top:1px}
+  .botClose{cursor:pointer;color:var(--muted);font-size:15px;padding:2px 6px;line-height:1}
+  .botMsgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+  .bmsg{font-size:13px;line-height:1.5;border-radius:11px;padding:9px 12px;max-width:90%}
+  .bmsg.user{align-self:flex-end;background:var(--accent);color:#0c0e14;font-weight:500}
+  .bmsg.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+  .bmsg.bot ul.botul{margin:7px 0 2px;padding-left:18px} .bmsg.bot li{margin:2px 0}
+  .botquote{display:block;font-style:italic;color:var(--muted);border-left:2px solid var(--line);padding-left:9px;margin-top:6px}
+  .botnote{display:block;font-size:11px;color:var(--dim);margin-top:5px}
+  .botChips{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px}
+  .botChip{font-size:11px;color:var(--accent);border:1px solid var(--line);border-radius:14px;padding:4px 10px;cursor:pointer;background:var(--panel2)}
+  .botChip:hover{border-color:var(--accent)}
+  .botInputRow{display:flex;gap:8px;padding:11px 13px;border-top:1px solid var(--line)}
+  .botInput{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--txt);font-size:13px;outline:none}
+  .botInput:focus{border-color:var(--accent)}
+  .botSend{background:var(--accent);color:#0c0e14;border:none;border-radius:9px;padding:0 14px;font-weight:700;font-size:13px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -338,6 +363,21 @@
     advisor, not live tooling. The narrative leads; the scoring, normalization and calibration sit under the hood,
     one tap away — so a recommendation is never a black box.
   </footer>
+</div>
+
+<!-- CONSULTANT BOT -->
+<div id="botFab" class="botFab">💬 Ask the CIS Consultant</div>
+<div id="botPanel" class="botPanel">
+  <div class="botHead">
+    <div><b>CIS Consultant</b><div class="botSub">answers only from synthesized evidence — never guesswork</div></div>
+    <span id="botClose" class="botClose">✕</span>
+  </div>
+  <div id="botMsgs" class="botMsgs"></div>
+  <div id="botChips" class="botChips"></div>
+  <div class="botInputRow">
+    <input id="botInput" class="botInput" placeholder="Ask why, a what-if, or for a summary…" autocomplete="off">
+    <button id="botSend" class="botSend">Send</button>
+  </div>
 </div>
 
 <script>
@@ -712,21 +752,23 @@ function renderVerbatims(){
     return head+`<p style="font-size:12.5px;color:var(--muted);margin:0"><b>Evidence Unavailable</b> — no open-ended responses ingested for this campaign yet.</p>`;
   return head+VERB[v].map(th=>`<div class="vtheme"><span class="vt-label">${th.t}</span><span class="vt-prev">${th.p}</span></div><div class="vquote">“${th.q[0]}”</div>`).join('');
 }
-function creativeAgreement(){
-  if(!state.creative.connected) return null;
-  const quant=qstate(state.creative.s,false).ev; // pos / mix / neg
-  const v=QUAL[dataset];
-  if(v===undefined||v===null) return {state:'partial',tag:'Quant only',cls:'ag-partial',
+// pure verdict for any campaign — used by the UI and the consultant bot
+function qualVerdict(ds){
+  const quant=qstate(normalize('creative',RAW[ds].creative).s,false).ev; // pos / mix / neg
+  const v=QUAL[ds];
+  if(v===undefined||v===null) return {state:'partial',tag:'Quant only',cls:'ag-partial',quote:null,
     text:'Quantitative creative testing only — no consumer verbatims available to corroborate it yet.'};
-  if(quant==='pos'&&v!=='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',
+  const quote=VERB[v][0].q[0];
+  if(quant==='pos'&&v!=='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',quote,
     text:`${srcOf('creative')} rates the creative strongly, but consumers’ own words raise concerns — the sources conflict. The verbatims likely explain the softer downstream behaviour.`};
-  if(quant==='neg'&&v==='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',
+  if(quant==='neg'&&v==='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',quote,
     text:`${srcOf('creative')} rates the creative poorly, yet consumer verbatims are positive — worth a closer look before discarding the creative.`};
-  if((quant==='pos'&&v==='pos')||(quant==='neg'&&v==='neg')) return {state:'aligned',tag:'Aligned',cls:'ag-aligned',
+  if((quant==='pos'&&v==='pos')||(quant==='neg'&&v==='neg')) return {state:'aligned',tag:'Aligned',cls:'ag-aligned',quote,
     text:'Quantitative testing and consumer verbatims point the same way — a consistent read.'};
-  return {state:'mixed',tag:'Mixed',cls:'ag-mixed',
+  return {state:'mixed',tag:'Mixed',cls:'ag-mixed',quote,
     text:'Quantitative and qualitative signals are partly consistent, with some divergence worth watching.'};
 }
+function creativeAgreement(){ return state.creative.connected ? qualVerdict(dataset) : null; }
 function renderAgreement(){
   const a=creativeAgreement();
   if(!a) return `<div class="agreeRow"><span class="agreeTag ag-partial">—</span>Connect the creative source (${srcOf('creative')}) to weigh quantitative testing against consumer verbatims.</div>`;
@@ -858,6 +900,105 @@ function highlightBottleneck(k){
 }
 function renderWeights(w){const chips=document.getElementById('weightChips');chips.innerHTML='';
   DOMAINS.forEach(d=>{const c=document.createElement('span');c.className='wchip';c.innerHTML=`${d.name.split(' ')[0]} <b>${w[d.key].toFixed(1)}×</b>`;chips.appendChild(c);});}
+
+// ================= CONSULTANT BOT (grounded in the engine — never invents) =================
+const domShort=k=>nameOf(k).replace(' Intelligence','');
+function campaignRecord(ds){
+  const w=MARKETS[mSel.value].w, sc={};
+  ALL.forEach(k=>sc[k]=normalize(k,RAW[ds][k]));
+  const {cis,conf}=composite(k=>sc[k].s,k=>sc[k].c,ALL,w);
+  const S=k=>sc[k].s, bl=bottleneck(S,ALL.slice(),w);
+  const d=decide(S,()=>true,cis,conf,DSMETA[ds].spend,w,ALL.slice());
+  return {ds,label:DSMETA[ds].label,sc,cis,conf,bl,rec:d.rec,headline:d.headline,why:d.why};
+}
+function whatIf(ds,dk,dir){
+  const w=MARKETS[mSel.value].w, sc={};
+  ALL.forEach(k=>sc[k]=normalize(k,RAW[ds][k]));
+  const base=campaignRecord(ds), nv=dir==='strong'?72:35, S=k=>k===dk?nv:sc[k].s;
+  const {cis,conf}=composite(S,k=>sc[k].c,ALL,w);
+  const d=decide(S,()=>true,cis,conf,DSMETA[ds].spend,w,ALL.slice());
+  return {base,newRec:d.rec,changed:d.rec!==base.rec};
+}
+function whyAnswer(rec){
+  let out=`<b>${rec.label} → ${ACTION[rec.rec].label}.</b> ${rec.headline}<br><br>The evidence behind it:<ul class="botul">`;
+  FUNNEL_ORDER.forEach(k=>{const low=rec.sc[k].c<50,qq=qstate(rec.sc[k].s,true,low);
+    out+=`<li>${srcOf(k)}: ${EVID[k][qq.ev]}${low?' <i>(inferred)</i>':''}</li>`;});
+  out+='</ul>';
+  const v=qualVerdict(rec.ds);
+  if(v.tag==='Conflicting'){out+=`And a <b>conflict</b> worth noting: ${v.text}`;if(v.quote)out+=`<span class="botquote">“${v.quote}”</span>`;}
+  out+=`The constraint is <b>${domShort(rec.bl)}</b>. `;
+  const act=rec.why.find(x=>x.c==='neu'); if(act)out+=`Next: ${act.t}`;
+  return out;
+}
+function askConsultant(qRaw){
+  const q=qRaw.toLowerCase().trim();
+  const rec=campaignRecord(dataset);
+  if(q===''||/^(help|hi|hello|hey|what can you|who are you)/.test(q))
+    return `I'm the CIS consultant. I answer <b>only from the evidence CIS has synthesized</b> for these campaigns — I won't guess. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What's the conflict here?”</li><li>“What if attention improves?”</li><li>“Which campaigns should I stop?”</li><li>“Summarize my portfolio.”</li></ul>`;
+  // portfolio summary
+  if(/(portfolio|summar|overview|all campaign|triage|book|the whole|everything)/.test(q)){
+    const g={SCALE:[],OPTIMIZE:[],TEST:[],STOP:[]};
+    Object.keys(RAW).forEach(x=>{g[campaignRecord(x).rec].push(DSMETA[x].label);});
+    let out=`Across all ${Object.keys(RAW).length} campaigns:<ul class="botul">`;
+    ['SCALE','OPTIMIZE','TEST','STOP'].forEach(r=>{if(g[r].length)out+=`<li><b>${ACTION[r].label}</b> (${g[r].length}): ${g[r].join(', ')}</li>`;});
+    return out+'</ul>The clearest moves: stop the campaigns burning spend with no return, scale the efficient ones. Ask me “why” about any of them.';
+  }
+  // which to scale/stop/test/optimize
+  for(const [kw,r] of [['scale','SCALE'],['stop','STOP'],['optimi','OPTIMIZE']]){
+    if(q.includes(kw)&&!/what if|improve|fix|better|worse/.test(q)){
+      const list=Object.keys(RAW).map(campaignRecord).filter(x=>x.rec===r);
+      if(!list.length) return `No campaigns currently fall under <b>${ACTION[r].label}</b>.`;
+      return `<b>${ACTION[r].label}</b> — ${list.length} campaign${list.length>1?'s':''}:<ul class="botul">`+
+        list.map(x=>`<li>${x.label} — ${x.conf<45?'data too thin to trust yet':domShort(x.bl)+' is the constraint'}</li>`).join('')+'</ul>';
+    }
+  }
+  // what-if
+  if(/what if|what would happen|suppose|if .*(improve|fix|increase|raise|boost|worsen|drop|lower|reduce|better|worse)/.test(q)){
+    const dk=/attention/.test(q)?'attention':/creativ|\bad\b|message/.test(q)?'creative':/context/.test(q)?'context':
+      /behavi|conversion|click/.test(q)?'behavioral':/business|revenue|cpa|roi|cost|spend/.test(q)?'business':null;
+    if(!dk) return `Happy to model a what-if — just name the lever. e.g. “what if <b>attention</b> improves?” or “what if <b>creative</b> gets worse?”`;
+    const dir=/(worse|drop|lower|reduce|weak|decline|down|fail)/.test(q)?'weak':'strong';
+    const wi=whatIf(dataset,dk,dir), verb=dir==='strong'?'improved to Strong':'fell to Weak';
+    if(wi.changed) return `If <b>${domShort(dk)}</b> ${verb} on <b>${rec.label}</b>, the recommendation would shift from <b>${ACTION[rec.rec].label}</b> to <b>${ACTION[wi.newRec].label}</b>.<span class="botnote">Computed by re-running the engine on the changed input — not estimated.</span>`;
+    return `If <b>${domShort(dk)}</b> ${verb} on <b>${rec.label}</b>, the call would stay <b>${ACTION[rec.rec].label}</b> — ${dk===rec.bl?'it eases the main constraint, but not enough alone to change the decision':'the constraint is elsewhere ('+domShort(rec.bl)+'), so this lever alone doesn’t move it'}.<span class="botnote">Computed by re-running the engine.</span>`;
+  }
+  // conflict / verbatims
+  if(/(conflict|verbatim|consumer|qualitative|open.?end|what.*(say|said|think)|disagree|agree|aligned)/.test(q)){
+    const v=qualVerdict(dataset);
+    return `On <b>${rec.label}</b>, the creative read is <b>${v.tag}</b>: ${v.text}`+(v.quote?`<span class="botquote">“${v.quote}”</span>`:'');
+  }
+  // confidence
+  if(/(confiden|how sure|trust|reliable|data quality|thin|certain)/.test(q)){
+    const lowq=ALL.filter(k=>rec.sc[k].c<50).map(srcOf);
+    return `Evidence quality on <b>${rec.label}</b> is <b>${rec.conf}%</b> (${rec.conf>=65?'solid':rec.conf>=45?'moderate':'thin'}).`+
+      (lowq.length?` Lower-confidence / inferred reads: ${lowq.join(', ')} — treat those as hypotheses.`:' All reads are usable quality.');
+  }
+  // bottleneck
+  if(/(bottleneck|weakest|breaking down|constraint|the problem|whats wrong|what.s wrong)/.test(q)){
+    return `On <b>${rec.label}</b>, the constraint is <b>${domShort(rec.bl)}</b> — the weakest link given how the rest of the funnel reads. That's where I'd focus first.`;
+  }
+  // why / explain (default for the selected campaign)
+  if(/(why|explain|reason|justif|rationale|recommend|what should|do next|tell me|this campaign)/.test(q))
+    return whyAnswer(rec);
+  // refuse — stay inside the evidence
+  return `I can only answer from the evidence CIS has synthesized for these campaigns — I don't have evidence on that. Try “why this recommendation?”, “what's the conflict?”, a what-if (“what if attention improves?”), or “summarize my portfolio.”`;
+}
+// wiring
+(function(){
+  const panel=document.getElementById('botPanel'), msgs=document.getElementById('botMsgs'), fab=document.getElementById('botFab'), input=document.getElementById('botInput');
+  const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  function add(html,who){const m=document.createElement('div');m.className='bmsg '+who;m.innerHTML=html;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight;}
+  function send(text){const t=(text!==undefined?text:input.value).trim();if(!t)return;add(esc(t),'user');input.value='';setTimeout(()=>add(askConsultant(t),'bot'),200);}
+  fab.addEventListener('click',()=>{panel.classList.add('open');fab.style.display='none';
+    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm the CIS consultant, currently looking at <b>${DSMETA[dataset].label}</b>. I answer only from the evidence CIS has synthesized. Ask me why, a what-if, or for a portfolio summary.`,'bot');}
+    input.focus();});
+  document.getElementById('botClose').addEventListener('click',()=>{panel.classList.remove('open');fab.style.display='block';});
+  document.getElementById('botSend').addEventListener('click',()=>send());
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+  const chips=document.getElementById('botChips');
+  [['Why this recommendation?','Why this recommendation?'],['What’s the conflict?','What is the conflict on this campaign?'],['What if attention improves?','What if attention improves?'],['Summarize my portfolio','Summarize my portfolio']]
+    .forEach(([lbl,qq])=>{const c=document.createElement('span');c.className='botChip';c.textContent=lbl;c.addEventListener('click',()=>send(qq));chips.appendChild(c);});
+})();
 
 compute();
 </script>

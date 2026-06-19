@@ -155,6 +155,34 @@
   .blnote2{font-size:14px;margin:0;line-height:1.5;color:var(--txt)}
   .nextAction{font-size:14px;margin:0;line-height:1.5;color:var(--txt);background:var(--panel2);
     border-left:2.5px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 13px}
+  /* three-stage flow */
+  .flow{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin:0 0 6px;font-weight:600}
+  .stage{border-top:1px solid var(--line);padding:14px 0}
+  .stageHd{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
+    margin-bottom:10px;display:flex;align-items:center;gap:9px}
+  .stageNo{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;
+    background:var(--accent);color:#0c0e14;font-size:11px;font-weight:700;flex-shrink:0}
+  /* verbatims */
+  .verb:empty{display:none}
+  .verb{margin-top:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
+  .verbHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:9px;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ill{font-size:9.5px;font-weight:600;color:var(--dim);border:1px solid var(--line);border-radius:10px;
+    padding:1px 7px;text-transform:none;letter-spacing:0}
+  .vtheme{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:3px}
+  .vt-label{font-weight:600} .vt-prev{font-size:11px;color:var(--dim);white-space:nowrap;margin-left:10px}
+  .vquote{font-size:12.5px;color:var(--muted);font-style:italic;border-left:2px solid var(--line);
+    padding:2px 0 2px 10px;margin:4px 0 11px}
+  .vquote:last-child{margin-bottom:0}
+  /* interpretation: source agreement */
+  .agreeRow{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5;margin-bottom:10px}
+  .agreeTag{flex-shrink:0;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+    padding:3px 9px;border-radius:6px;margin-top:1px}
+  .ag-aligned{background:rgba(56,211,159,.16);color:var(--good)}
+  .ag-conflicting{background:rgba(240,106,106,.16);color:var(--bad)}
+  .ag-mixed{background:rgba(246,197,68,.16);color:var(--warn)}
+  .ag-partial{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  .raquote{display:block;margin-top:7px;font-style:italic;color:var(--muted);font-size:13px}
   .advFoot{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
   @media(max-width:760px){.advFoot{grid-template-columns:1fr}}
   .confRow{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:6px}
@@ -199,16 +227,18 @@
 <body>
 <div class="wrap">
   <header>
-    <span class="tag">Working Prototype · Evidence-Based Decision Layer</span>
+    <span class="tag">Working Prototype · Evidence Synthesis Platform</span>
     <h1>Creative Intelligence System</h1>
-    <p>CIS is not another dashboard. It reads the evidence your existing tools already produce, works out
-       <b>where performance is breaking down</b>, and recommends <b>what to do next</b> — with the rationale in
-       plain language. The scoring still happens underneath (tap any signal, or open <i>Under the hood</i>), but the
-       recommendation is the product and the evidence is the rationale.</p>
-    <p style="font-size:12px;color:var(--dim);max-width:820px;margin-top:-14px">The 12 campaigns are derived from a
-       <b>real public Facebook-ads dataset</b>. Behavioral &amp; Business reads come from the actual metrics
-       (impressions, clicks, spend, conversions, CPA); the upper-funnel reads (Context, Attention, Creative) are
-       <i>inferred</i> from engagement and marked lower-confidence, since no public source measures them.</p>
+    <p>CIS is not another dashboard or another score. It <b>synthesizes the evidence you already collect but rarely
+       connect</b> — quantitative signals and the actual language consumers use — works out <b>where performance is
+       breaking down</b>, and recommends <b>what to do next</b>. Every read follows the same chain:
+       <b>Evidence → Interpretation → Recommendation</b>. The scoring still happens underneath (open <i>Under the
+       hood</i>), but the recommendation is the product and the evidence is the rationale.</p>
+    <p style="font-size:12px;color:var(--dim);max-width:840px;margin-top:-14px">The 12 campaigns are derived from a
+       <b>real public Facebook-ads dataset</b>; Behavioral &amp; Business reads come from the actual metrics, while
+       the upper-funnel reads (Context, Attention, Creative) are <i>inferred</i> and marked lower-confidence. The
+       consumer <b>verbatims are illustrative placeholders</b> for real Ace Metrix open-ends — they show how
+       qualitative evidence sits alongside the numbers, and where the two <i>agree or conflict</i>.</p>
   </header>
 
   <div class="selects">
@@ -227,18 +257,25 @@
       <span class="recBadge" id="recBadge">—</span>
       <div class="heroHeadline" id="recHeadline">Connect data sources to begin.</div>
     </div>
-    <div class="advBody">
-      <div class="advSection">
-        <h3>What the evidence says</h3>
-        <ul class="ev" id="evList"><li class="neu">No sources connected yet.</li></ul>
-      </div>
-      <div class="advSection">
-        <h3>Where it's breaking down</h3>
-        <p class="blnote2" id="blNote">—</p>
-        <h3 style="margin-top:16px">Recommended next action</h3>
-        <p class="nextAction" id="nextAction">—</p>
-      </div>
+    <div class="flow">Evidence → Interpretation → Recommendation</div>
+
+    <div class="stage">
+      <div class="stageHd"><span class="stageNo">1</span> Evidence</div>
+      <ul class="ev" id="evList"><li class="neu">No evidence ingested yet.</li></ul>
+      <div class="verb" id="verbBlock"></div>
     </div>
+
+    <div class="stage">
+      <div class="stageHd"><span class="stageNo">2</span> Interpretation</div>
+      <div class="agree" id="agreeBlock"></div>
+      <p class="blnote2" id="blNote">—</p>
+    </div>
+
+    <div class="stage">
+      <div class="stageHd"><span class="stageNo">3</span> Recommendation</div>
+      <p class="nextAction" id="nextAction">—</p>
+    </div>
+
     <div class="advFoot">
       <div class="confWrap">
         <div class="confRow"><span>How sure we are — evidence quality</span><span id="confTxt">—</span></div>
@@ -309,8 +346,8 @@ const c1=x=>Math.max(0,Math.min(100,x)), R=Math.round;
 // ---------- Domains & source tools ----------
 const DOMAINS=[
   {key:'context',  name:'Context Intelligence',  src:'Peer39',      cat:'Contextual',       logo:'#7a8cff'},
-  {key:'attention',name:'Attention Intelligence', src:'Adelaide',    cat:'Attention (AU)',   logo:'#6ea8fe'},
-  {key:'creative', name:'Creative Intelligence',  src:'System1',     cat:'Creative testing', logo:'#b98cf0'},
+  {key:'attention',name:'Attention Intelligence', src:'iSpot',       cat:'Attention & airings',   logo:'#6ea8fe'},
+  {key:'creative', name:'Creative Intelligence',  src:'Ace Metrix',  cat:'Creative testing + open-ends', logo:'#b98cf0'},
   {key:'behavioral',name:'Behavioral Intelligence',src:'GA4 + Search',cat:'Web behavior',    logo:'#38d39f'},
   {key:'business', name:'Business Intelligence',   src:'Snowflake',  cat:'Revenue warehouse',logo:'#f6c544'},
 ];
@@ -653,6 +690,56 @@ function qstate(s,connected,low){
 }
 const srcOf=k=>DOMAINS.find(d=>d.key===k).src;
 
+// ---------- qualitative evidence: consumer verbatims (illustrative stand-in for Ace Metrix open-ends) ----------
+const VERB={
+  pos:[{t:'Clear message',p:'~36% of open-ends',q:['I knew right away what they were offering.']},
+       {t:'Emotionally engaging',p:'~22% of open-ends',q:['It actually made me smile — felt genuine.']}],
+  neg:[{t:'Offer confusion',p:'~31% of open-ends',q:["I couldn't tell what they were actually selling."]},
+       {t:'Forgettable',p:'~18% of open-ends',q:['Nothing about it stuck with me.']}],
+  mix:[{t:'Liked, but unclear ask',p:'~27% of open-ends',q:['Nice ad, but what do they want me to do?']},
+       {t:'Some confusion on the offer',p:'~15% of open-ends',q:['Took me a second to get the point.']}],
+};
+// per-campaign verbatim valence (illustrative; would come from real Ace Metrix open-ends)
+const QUAL={c916_30_34:'mix',c916_35_39:'pos',c916_40_44:'pos',c916_45_49:'neg',
+  c936_30_34:'pos',c936_35_39:'pos',c936_40_44:'neg',c936_45_49:null,
+  c1178_30_34:'neg',c1178_35_39:'neg',c1178_40_44:null,c1178_45_49:'neg'};
+
+function renderVerbatims(){
+  if(!state.creative.connected) return '';
+  const head=`<div class="verbHd">Consumer verbatims · ${srcOf('creative')} open-ends <span class="ill">illustrative</span></div>`;
+  const v=QUAL[dataset];
+  if(v===undefined||v===null)
+    return head+`<p style="font-size:12.5px;color:var(--muted);margin:0"><b>Evidence Unavailable</b> — no open-ended responses ingested for this campaign yet.</p>`;
+  return head+VERB[v].map(th=>`<div class="vtheme"><span class="vt-label">${th.t}</span><span class="vt-prev">${th.p}</span></div><div class="vquote">“${th.q[0]}”</div>`).join('');
+}
+function creativeAgreement(){
+  if(!state.creative.connected) return null;
+  const quant=qstate(state.creative.s,false).ev; // pos / mix / neg
+  const v=QUAL[dataset];
+  if(v===undefined||v===null) return {state:'partial',tag:'Quant only',cls:'ag-partial',
+    text:'Quantitative creative testing only — no consumer verbatims available to corroborate it yet.'};
+  if(quant==='pos'&&v!=='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',
+    text:`${srcOf('creative')} rates the creative strongly, but consumers’ own words raise concerns — the sources conflict. The verbatims likely explain the softer downstream behaviour.`};
+  if(quant==='neg'&&v==='pos') return {state:'conflicting',tag:'Conflicting',cls:'ag-conflicting',
+    text:`${srcOf('creative')} rates the creative poorly, yet consumer verbatims are positive — worth a closer look before discarding the creative.`};
+  if((quant==='pos'&&v==='pos')||(quant==='neg'&&v==='neg')) return {state:'aligned',tag:'Aligned',cls:'ag-aligned',
+    text:'Quantitative testing and consumer verbatims point the same way — a consistent read.'};
+  return {state:'mixed',tag:'Mixed',cls:'ag-mixed',
+    text:'Quantitative and qualitative signals are partly consistent, with some divergence worth watching.'};
+}
+function renderAgreement(){
+  const a=creativeAgreement();
+  if(!a) return `<div class="agreeRow"><span class="agreeTag ag-partial">—</span>Connect the creative source (${srcOf('creative')}) to weigh quantitative testing against consumer verbatims.</div>`;
+  return `<div class="agreeRow"><span class="agreeTag ${a.cls}">${a.tag}</span>${a.text}</div>`;
+}
+function quoteForRationale(rec){
+  if(!state.creative.connected) return null;
+  const v=QUAL[dataset]; if(v===undefined||v===null) return null;
+  if(rec==='SCALE'&&v==='pos') return VERB.pos[0].q[0];
+  if((rec==='OPTIMIZE'||rec==='TEST'||rec==='STOP')&&v!=='pos') return VERB[v][0].q[0];
+  return null;
+}
+
 // ---------- evidence chips (numbers one tap away) ----------
 function renderChips(){
   const wrap=document.getElementById('chips');wrap.innerHTML='';
@@ -718,7 +805,9 @@ function renderAdvisor(d,cis,conf,connKeys,bl){
     badge.textContent='—';badge.style.background=COLORS.dim;badge.style.color='#fff';
     document.getElementById('recCard').style.borderColor='var(--line)';
     document.getElementById('recHeadline').textContent='Connect data sources to begin.';
-    ev.innerHTML='<li class="neu">No sources connected yet.</li>';
+    ev.innerHTML='<li class="neu">No evidence ingested yet.</li>';
+    document.getElementById('verbBlock').innerHTML='';
+    document.getElementById('agreeBlock').innerHTML='';
     document.getElementById('blNote').textContent='—';
     document.getElementById('nextAction').textContent='—';
     document.getElementById('confFill').style.width='0';document.getElementById('confTxt').textContent='—';
@@ -728,7 +817,7 @@ function renderAdvisor(d,cis,conf,connKeys,bl){
   badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
   document.getElementById('recCard').style.borderColor=A.color;
   document.getElementById('recHeadline').textContent=d.headline;
-  // evidence — source-cited, qualitative, in funnel order
+  // STAGE 1 — Evidence: source-cited quantitative reads, in funnel order
   ev.innerHTML='';
   FUNNEL_ORDER.forEach(k=>{
     const connected=state[k].connected, low=connected&&state[k].c<50, q=qstate(state[k].s,connected,low), E=EVID[k];
@@ -737,11 +826,17 @@ function renderAdvisor(d,cis,conf,connKeys,bl){
     else txt=`<span class="srcname">${srcOf(k)}</span> shows ${E[q.ev]}${low?' <span style="color:var(--dim)">(inferred, lower confidence)</span>':''}.`;
     const li=document.createElement('li');li.className=connected?q.ev:'neu';li.innerHTML=txt;ev.appendChild(li);
   });
+  // STAGE 1 — qualitative evidence (verbatims)
+  document.getElementById('verbBlock').innerHTML=renderVerbatims();
+  // STAGE 2 — Interpretation: source agreement/conflict + the constraint
+  document.getElementById('agreeBlock').innerHTML=renderAgreement();
   document.getElementById('blNote').innerHTML = bl
-    ? `The evidence points to <b>${nameOf(bl).replace(' Intelligence','')}</b> as the constraint — it's the weakest link given how the rest of the funnel looks.`
+    ? `Reading it together, the constraint looks like <b>${nameOf(bl).replace(' Intelligence','')}</b> — the weakest link given how the rest of the funnel reads.`
     : 'No single constraint stands out — the read is broadly consistent across the funnel.';
+  // STAGE 3 — Recommendation: next action, with a consumer quote as rationale where it fits
   const act=d.why.find(x=>x.c==='neu');
-  document.getElementById('nextAction').textContent=act?act.t:d.headline;
+  const q=quoteForRationale(d.rec);
+  document.getElementById('nextAction').innerHTML=(act?act.t:d.headline)+(q?`<span class="raquote">In consumers’ own words: “${q}”</span>`:'');
   document.getElementById('confFill').style.width=conf+'%';
   document.getElementById('confFill').style.background=conf>=65?COLORS.good:conf>=45?COLORS.warn:COLORS.bad;
   document.getElementById('confTxt').textContent=conf+'% '+(conf>=65?'· solid':conf>=45?'· moderate':'· thin');

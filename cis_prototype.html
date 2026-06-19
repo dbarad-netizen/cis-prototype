@@ -62,6 +62,13 @@
   .missing{background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:11px 13px}
   .missing h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--warn);margin:0 0 6px}
   .missing p{margin:0;font-size:12px;color:var(--muted)}
+  .evcov{display:flex;flex-direction:column;gap:6px}
+  .evcovRow{display:flex;align-items:center;gap:8px;font-size:12px}
+  .evcovTag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .es-avail{background:rgba(56,211,159,.16);color:var(--good)}
+  .es-weak{background:rgba(246,197,68,.16);color:var(--warn)}
+  .es-unavail{background:var(--panel2);color:var(--dim);border:1px solid var(--line)}
+  .evcovName{color:var(--muted)}
   /* chips */
   .chips{display:flex;gap:10px;flex-wrap:wrap}
   .chip{flex:1;min-width:180px;border:1px solid var(--line);border-radius:11px;padding:12px 14px;cursor:pointer;background:var(--panel2);transition:border-color .2s,transform .1s}
@@ -199,7 +206,7 @@
     </div>
     <div class="advFoot">
       <div><div class="confRow"><span>How sure we are — evidence quality</span><span id="confTxt">—</span></div><div class="confbar"><div class="conffill" id="confFill" style="width:0"></div></div></div>
-      <div class="missing"><h3>What we're missing</h3><p id="missingTxt">No evidence connected yet.</p></div>
+      <div class="missing"><h3>Evidence coverage</h3><div class="evcov" id="evCoverage"></div></div>
     </div>
   </div>
 
@@ -288,7 +295,7 @@ const ADS={
   on:{name:'On Running — “Elmo” campaign', short:'On Running', cat:'Athletic footwear', spend:45,
     creative:{Attention:72,Likeability:80,emotions:[['Heartwarming',76],['Fun',70]],Relevance:60,sentiment:'pos',
       verb:[{t:'Loved the character',p:'~43% of comments',q:'Elmo made me smile the whole time.'},{t:'Whose shoes?',p:'~25% of comments',q:'Cute… but I couldn’t tell you the brand.'}]},
-    brand:{Recall:38,Intent:50,Favorability:52}, business:null, conf:{creative:80,brand:68}},
+    brand:{Recall:38,Intent:50,Favorability:52}, business:null, conf:{creative:80,brand:50}},
   geico:{name:'GEICO — “Hump Day”', short:'GEICO', cat:'Insurance', spend:58,
     creative:{Attention:78,Likeability:80,emotions:[['Funny',86]],Relevance:62,Desire:55,sentiment:'pos',
       verb:[{t:'Quoted it for days',p:'~45% of comments',q:'WHAT DAY IS IT?! — couldn’t stop saying it.'},{t:'Brand stuck',p:'~30% of comments',q:'Instantly knew it was GEICO.'}]},
@@ -300,11 +307,11 @@ const ADS={
   peloton:{name:'Peloton — “The Gift That Gives Back”', short:'Peloton', cat:'Fitness', spend:55,
     creative:{Attention:76,Likeability:34,emotions:[['Uneasy',38]],Relevance:42,sentiment:'neg',
       verb:[{t:'Comes across dystopian',p:'~44% of comments',q:'Felt like a story about control, not fitness.'},{t:'Uncomfortable',p:'~21% of comments',q:'The wife looks terrified the whole time.'}]},
-    brand:{Recall:78,Intent:38,Favorability:30}, business:{SalesLift:35,Conversion:36}, conf:{creative:82,brand:70,business:60}},
+    brand:{Recall:78,Intent:38,Favorability:30}, business:{SalesLift:35,Conversion:36}, conf:{creative:82,brand:70,business:52}},
   quibi:{name:'Quibi — launch campaign', short:'Quibi', cat:'Streaming', spend:48,
     creative:{Attention:40,Likeability:38,emotions:[['Confusing',35]],Relevance:34,sentiment:'mixed',
       verb:[{t:'Didn’t get it',p:'~37% of comments',q:'I still don’t know what Quibi is.'},{t:'Forgettable',p:'~22% of comments',q:'Nothing stuck.'}]},
-    brand:{Recall:36,Intent:34,Favorability:40}, business:{SalesLift:28,Conversion:30}, conf:{creative:78,brand:66,business:58}},
+    brand:{Recall:36,Intent:34,Favorability:40}, business:{SalesLift:28,Conversion:30}, conf:{creative:78,brand:52,business:48}},
 };
 
 // ---------- synthesis ----------
@@ -436,26 +443,38 @@ const EVID={
 const evWord=s=>s>=62?'pos':s>=48?'mix':'neg';
 
 // ---------- compute / render ----------
+// explicit evidence-state framework: Available / Weak / Unavailable (about the evidence, not the verdict)
+function evidenceState(k){
+  if(!conn[k]) return {label:'Evidence Unavailable',cls:'es-unavail'};
+  const sy=synth(k,ADS[ad]);
+  if(!sy.avail) return {label:'Evidence Unavailable',cls:'es-unavail'};
+  if(sy.conf<55) return {label:'Evidence Weak',cls:'es-weak'};
+  return {label:'Evidence Available',cls:'es-avail'};
+}
+function renderCoverage(){
+  const wrap=document.getElementById('evCoverage');wrap.innerHTML='';
+  CHAIN.forEach(k=>{const s=evidenceState(k);
+    const r=document.createElement('div');r.className='evcovRow';
+    r.innerHTML=`<span class="evcovTag ${s.cls}">${s.label}</span><span class="evcovName">${CATS[k].name}</span>`;
+    wrap.appendChild(r);});
+}
+// the verbatim that best evidences the recommendation (brand-confusion theme for forgettable-brand cases)
+function supportingVerbatim(id,ev){
+  const cr=ADS[id].creative;
+  if(!cr||!cr.verb||!cr.verb.length||!conn.creative||!synth('creative',ADS[id]).avail) return null;
+  if(ev.rec==='OPTIMIZE'&&ev.bl==='brand'&&cr.verb[1]) return cr.verb[1];
+  return cr.verb[0];
+}
 function compute(){
   const connKeys=CHAIN.filter(k=>conn[k]);
   const keys=connKeys.filter(k=>synth(k,ADS[ad]).avail);
   document.getElementById('covTxt').textContent=connKeys.length+'/3';
-  renderChips();renderTriage();
+  renderChips();renderTriage();renderCoverage();
   const cisEl=document.getElementById('cisScore');
-  if(keys.length===0){renderAdvisor(null);
-    document.getElementById('missingTxt').textContent= connKeys.length? 'Connected sources have no usable evidence for this ad.' : 'No evidence connected. Nothing to synthesize yet.';
-    renderFunnel(null);cisEl.textContent='—';cisEl.style.color=COLORS.dim;return;}
+  if(keys.length===0){renderAdvisor(null);renderFunnel(null);cisEl.textContent='—';cisEl.style.color=COLORS.dim;return;}
   const ev=evaluate(ad,keys);
   renderAdvisor(ev);renderFunnel(ev);
   cisEl.textContent=ev.cis;cisEl.style.color=scoreColor(ev.cis);
-  // missing
-  const notConn=CHAIN.filter(k=>!conn[k]).map(k=>CATS[k].src+' ('+CATS[k].name.replace(' Evidence','')+')');
-  const unavail=connKeys.filter(k=>!synth(k,ADS[ad]).avail).map(k=>CATS[k].name);
-  let msg=[];
-  if(notConn.length)msg.push(`Not connected: ${notConn.join(', ')}.`);
-  if(unavail.length)msg.push(`Evidence Unavailable: ${unavail.join(', ')} — outcomes can’t be judged for this ad.`);
-  if(!msg.length)msg.push('All three evidence categories connected and available.');
-  document.getElementById('missingTxt').textContent=msg.join(' ');
 }
 function renderAdvisor(ev){
   const badge=document.getElementById('recBadge'), evl=document.getElementById('evList');
@@ -490,16 +509,17 @@ function renderAdvisor(ev){
   document.getElementById('blNote').innerHTML = ev.bl
     ? `Reading the chain together, it breaks down at <b>${CATS[ev.bl].name}</b> — that's the stage holding everything else back.`
     : 'The chain reads consistently — no single stage stands out as the constraint.';
-  // STAGE 3 recommendation
-  const q=(ev.rec!=='SCALE'&&v&&v.quote)?v.quote:(ev.rec==='SCALE'&&v&&v.tag==='Aligned'&&v.quote?v.quote:null);
-  document.getElementById('nextAction').innerHTML=ev.action+(q?`<span class="raquote">In consumers’ own words: “${q}”</span>`:'');
+  // STAGE 3 recommendation — cite the verbatim that evidences the call
+  const sv=supportingVerbatim(ad,ev);
+  document.getElementById('nextAction').innerHTML=ev.action+(sv?`<span class="raquote">Consumers said it themselves: “${sv.q}”</span>`:'');
   document.getElementById('confFill').style.width=ev.conf+'%';
   document.getElementById('confFill').style.background=ev.conf>=65?COLORS.good:ev.conf>=45?COLORS.warn:COLORS.bad;
   document.getElementById('confTxt').textContent=ev.conf+'% '+(ev.conf>=65?'· solid':ev.conf>=45?'· moderate':'· thin');
 }
 function renderVerb(){
   const sy=synth('creative',ADS[ad]);
-  let out=`<div class="verbHd">Consumer verbatims · ${CATS.creative.src} open-ends <span class="ill">illustrative</span></div>`;
+  let out=`<div class="verbHd">Consumer verbatims — the evidence behind the read <span class="ill">illustrative</span></div>`;
+  out+=`<p style="font-size:11.5px;color:var(--dim);margin:-3px 0 9px">The emotional scores are derived from these; they also surface what the numbers can't — like a brand that isn't landing.</p>`;
   sy.verb.forEach(t=>out+=`<div class="vtheme"><span class="vt-label">${t.t}</span><span class="vt-prev">${t.p}</span></div><div class="vquote">“${t.q}”</div>`);
   return out;
 }
@@ -563,14 +583,18 @@ function whatIf(id,dk,dir){const keys=availOf(id);const base=evaluate(id,keys);
   const conf=base.conf;const d=decide(S,has,sentiment,conf,ad2.spend);
   return {base,newRec:d.rec};}
 function whyAnswer(ev,id){
-  let out=`<b>${ADS[id].short} → ${ACTION[ev.rec].label}.</b> ${ev.headline}<br><br>The evidence chain:<ul class="botul">`;
-  CHAIN.forEach(k=>{const sy=ev.s[k];if(!sy){out+=`<li>${CATS[k].src}: not connected</li>`;return;}
-    out+=`<li>${CATS[k].src}: ${EVID[k][evWord(sy.score)]}</li>`;});
+  const confWord=ev.conf>=65?'solid':ev.conf>=45?'moderate':'thin';
+  let out=`I'd say <b>${ACTION[ev.rec].label}</b> on <b>${ADS[id].short}</b> — and I'm ${confWord}ly confident (${ev.conf}%). ${ev.headline}<br><br>Here's the evidence I'm reading:<ul class="botul">`;
+  CHAIN.forEach(k=>{const sy=ev.s[k];if(!sy){out+=`<li>${CATS[k].name}: not in evidence here</li>`;return;}
+    out+=`<li>${CATS[k].src} — ${CATS[k].name.replace(' Evidence','')}: ${EVID[k][evWord(sy.score)]}</li>`;});
   out+='</ul>';
   const v=qualVerdict(id);
-  if(v&&(v.tag==='Conflicting'||v.tag==='Polarizing')){out+=`Interpretation — <b>${v.tag}</b>: ${v.text}`;if(v.quote)out+=`<span class="botquote">“${v.quote}”</span>`;}
-  if(ev.bl)out+=`The chain breaks at <b>${CATS[ev.bl].name}</b>. `;
-  out+='Next: '+ev.action;return out;
+  if(v&&(v.tag==='Conflicting'||v.tag==='Polarizing'))out+=`The quant and the verbatims are <b>${v.tag.toLowerCase()}</b>: ${v.text}<br>`;
+  if(ev.bl)out+=`Where it breaks down: <b>${CATS[ev.bl].name}</b>. So my advice — ${ev.action}`;
+  else out+=ev.action;
+  const sv=supportingVerbatim(id,ev);
+  if(sv)out+=`<span class="botquote">Consumers said it themselves: “${sv.q}”</span>`;
+  return out;
 }
 function askConsultant(qRaw){
   const q=qRaw.toLowerCase().trim(), keys=availOf(ad), ev=evaluate(ad,keys);

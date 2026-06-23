@@ -67,8 +67,15 @@
   .evcovTag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:2px 7px;border-radius:5px;white-space:nowrap}
   .es-avail{background:rgba(56,211,159,.16);color:var(--good)}
   .es-weak{background:rgba(246,197,68,.16);color:var(--warn)}
+  .es-ai{background:rgba(185,140,240,.18);color:var(--test)}
   .es-unavail{background:var(--panel2);color:var(--dim);border:1px solid var(--line)}
   .evcovName{color:var(--muted)}
+  .aiToggle{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:9px 11px;user-select:none}
+  .aiToggle input{accent-color:var(--test);cursor:pointer}
+  .q-ai{color:var(--test)}
+  .aitag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--test);border:1px solid rgba(185,140,240,.4);border-radius:9px;padding:0 6px;margin-left:6px;vertical-align:1px}
+  ul.ev li.ai::before{background:var(--test)}
+  .fstage.ai .fbar{opacity:.85;background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(255,255,255,.12) 5px,rgba(255,255,255,.12) 10px)}
   /* chips */
   .chips{display:flex;gap:10px;flex-wrap:wrap}
   .chip{flex:1;min-width:180px;border:1px solid var(--line);border-radius:11px;padding:12px 14px;cursor:pointer;background:var(--panel2);transition:border-color .2s,transform .1s}
@@ -165,15 +172,17 @@
   <header>
     <span class="tag">Working Prototype · Evidence Synthesis Engine</span>
     <h1>Creative Intelligence System</h1>
-    <p>CIS synthesizes the creative-effectiveness evidence you already collect but rarely connect — emotional
-       measures, creative attributes, attention, consumer verbatims, brand impact, and business outcomes — into one
-       read: <b>Evidence → Interpretation → Recommendation</b>. It organizes everything as a chain —
-       <b>Creative Evidence → Brand Evidence → Business Evidence</b> — and finds where it breaks down.</p>
+    <p style="font-size:15px;color:var(--txt);max-width:840px;font-weight:600;margin-bottom:8px">Marketing doesn’t suffer from a lack of data. It suffers from a lack of explanation.</p>
+    <p>CIS answers the three questions every marketer keeps asking — <b>What happened? Why did it happen? What
+       should we do next?</b> — by synthesizing the creative-effectiveness evidence you already collect but rarely
+       connect: emotional measures, creative attributes, attention, consumer verbatims, brand response, and — the
+       bridge to marketplace performance — <b>effectiveness &amp; business outcomes</b>. It organizes everything as
+       a chain — <b>Creative → Brand → Business</b> — and finds where it breaks down.</p>
     <p style="font-size:12px;color:var(--dim);max-width:840px">The campaigns are <b>real, recognizable ads</b>;
        the measures mirror the <b>Ace Metrix / iSpot</b> model (Likeability, emotional metrics, attributes vs.
-       category norm, brand recall, intent, outcomes). Signal values here are <b>illustrative reconstructions</b>
-       drawn from each ad's public reputation — not actual Ace Metrix scores — and gaps are shown honestly as
-       "Evidence Unavailable."</p>
+       category norm, brand recall, intent, outcomes). Signal values are <b>illustrative reconstructions</b> of each
+       ad's public reputation — not actual vendor scores. Gaps show honestly as "Evidence Unavailable" — and where no
+       measured evidence exists, CIS can offer an <b>AI-derived estimate</b> from the ad content, clearly labeled and provisional.</p>
   </header>
 
   <div class="selects">
@@ -184,24 +193,25 @@
     </div>
     <div class="selwrap" style="flex:0 0 auto"><button class="btn" id="connectAll">⚡ Connect all evidence</button></div>
     <div class="selwrap" style="flex:0 0 auto"><button class="btn ghost" id="disconnectAll">Reset</button></div>
+    <div class="selwrap" style="flex:0 0 auto"><label class="aiToggle"><input type="checkbox" id="aiFill"> Let AI fill missing evidence</label></div>
   </div>
 
   <!-- ADVISOR -->
   <div class="card" id="recCard">
     <div class="recHead"><span class="recBadge" id="recBadge">—</span><div class="heroHeadline" id="recHeadline">Connect evidence to begin.</div></div>
-    <div class="flow">Evidence → Interpretation → Recommendation</div>
+    <div class="flow">What happened? → Why did it happen? → What should we do next?</div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">1</span> Evidence</div>
+      <div class="stageHd"><span class="stageNo">1</span> Evidence — what happened?</div>
       <ul class="ev" id="evList"><li class="neu">No evidence connected yet.</li></ul>
       <div class="verb" id="verbBlock"></div>
     </div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">2</span> Interpretation</div>
+      <div class="stageHd"><span class="stageNo">2</span> Interpretation — why did it happen?</div>
       <div id="agreeBlock"></div>
       <p class="blnote2" id="blNote">—</p>
     </div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">3</span> Recommendation</div>
+      <div class="stageHd"><span class="stageNo">3</span> Recommendation — what should we do next?</div>
       <p class="nextAction" id="nextAction">—</p>
     </div>
     <div class="advFoot">
@@ -266,7 +276,7 @@ const CHAIN=['creative','brand','business'];
 const CATS={
   creative:{name:'Creative Evidence',src:'Ace Metrix',cat:'Creative testing + verbatims',logo:'#b98cf0'},
   brand:{name:'Brand Evidence',src:'iSpot',cat:'Brand impact · recall, intent',logo:'#6ea8fe'},
-  business:{name:'Business Evidence',src:'Outcomes (MMM)',cat:'Sales & conversion',logo:'#f6c544'},
+  business:{name:'Business Evidence',src:'Outcomes (MMM)',cat:'Effectiveness · sales & outcomes',logo:'#f6c544'},
 };
 const ACTION={SCALE:{label:'Scale',color:COLORS.good},OPTIMIZE:{label:'Optimize',color:COLORS.accent},TEST:{label:'Test & learn',color:COLORS.test},STOP:{label:'Stop',color:COLORS.bad}};
 
@@ -358,6 +368,19 @@ function evaluate(id,keys){
   const bl=bottleneck(S,keys), d=decide(S,has,sentiment,conf,ad.spend);
   return {s,keys,conf,cis,sentiment,bl,...d};
 }
+// evaluate the CURRENT ad through AI-aware reads (measured + AI-filled)
+function evaluateCurrent(){
+  const reads={};CHAIN.forEach(k=>reads[k]=catRead(k));
+  const keys=CHAIN.filter(k=>reads[k].avail);
+  const conf=keys.length?R(keys.reduce((a,k)=>a+reads[k].conf,0)/keys.length):0;
+  const S=k=>reads[k].avail?reads[k].score:0, has=k=>keys.includes(k);
+  let num=0,den=0;keys.forEach(k=>{const cf=reads[k].conf/100,e=(0.5+0.5*cf);num+=reads[k].score*e;den+=e;});
+  const cis=den?R(num/den):0;
+  const sentiment=(reads.creative.avail&&reads.creative.sentiment)?reads.creative.sentiment:'pos';
+  const bl=bottleneck(S,keys), d=decide(S,has,sentiment,conf,ADS[ad].spend);
+  const aiKeys=keys.filter(k=>reads[k].provenance==='ai');
+  return {reads,keys,conf,cis,sentiment,bl,aiKeys,...d};
+}
 
 // ---------- qualitative verdict (quant creative vs verbatim sentiment) ----------
 function qualVerdict(id){
@@ -373,6 +396,28 @@ function qualVerdict(id){
 // ---------- state ----------
 const conn={creative:false,brand:false,business:false};
 let ad='budweiser';
+let aiFill=false;
+
+// ---------- AI-derived evidence (fills gaps where measurement doesn't exist; clearly provisional) ----------
+function aiEstimate(k){
+  const a=ADS[ad], cr=synth('creative',a), br=synth('brand',a);
+  let score,note;
+  if(k==='business'){
+    const base=br.avail?(0.7*br.score+0.3*(cr.avail?cr.score:55)):(cr.avail?cr.score-12:50);
+    score=c1(R(base-10)); note='Estimated from the creative and brand-linkage evidence — beloved ads with weak brand linkage tend to underperform on outcomes.';
+  } else if(k==='brand'){
+    score=c1(R(cr.avail?cr.score-12:50)); note='Estimated from AI analysis of the ad’s branding cues.';
+  } else {
+    score=55; note='Estimated from AI analysis of the ad content (no measured creative test available).';
+  }
+  return {avail:true,score,conf:40,note,measures:null};
+}
+// unified read for the CURRENT ad: measured evidence first, then AI fill, else unavailable
+function catRead(k){
+  if(conn[k]){const sy=synth(k,ADS[ad]); if(sy.avail) return {...sy,provenance:'measured',connected:true};}
+  if(aiFill){const a=aiEstimate(k); if(a) return {...a,provenance:'ai',connected:conn[k],sentiment:null,verb:null,emotions:null};}
+  return {avail:false,provenance:'none',connected:conn[k]};
+}
 
 // ---------- build sources ----------
 const cWrap=document.getElementById('connectors');
@@ -397,6 +442,7 @@ adSel.value=ad;adSel.addEventListener('change',()=>{ad=adSel.value;document.getE
 document.getElementById('adHint').textContent=ADS[ad].name;
 document.getElementById('connectAll').addEventListener('click',()=>CHAIN.forEach((k,i)=>{if(!conn[k])setTimeout(()=>connect(k),i*280);}));
 document.getElementById('disconnectAll').addEventListener('click',()=>{CHAIN.forEach(disconnect);compute();});
+document.getElementById('aiFill').addEventListener('change',e=>{aiFill=e.target.checked;CHAIN.forEach(k=>{if(conn[k])pull(k);});compute();});
 
 // ---------- connect ----------
 function toggleConnect(k){conn[k]?disconnect(k):connect(k);if(!conn[k])compute();}
@@ -417,7 +463,7 @@ function disconnect(k){conn[k]=false;document.getElementById('conn-'+k).classNam
 function pull(k){
   const sy=synth(k,ADS[ad]);
   const st=document.getElementById('status-'+k);
-  if(!sy.avail){st.innerHTML=`<span class="pulled">●</span> Evidence Unavailable for this ad`;document.getElementById('inspect-'+k).innerHTML=renderInspect(k,sy);return;}
+  if(!sy.avail){st.innerHTML=`<span class="pulled">●</span> No measured data for this ad${aiFill?' · AI estimate in use':''}`;document.getElementById('inspect-'+k).innerHTML=renderInspect(k,sy);return;}
   st.innerHTML=`<span class="pulled">●</span> ${CATS[k].name} read: <b>${stateWord(sy.score)}</b> · quality ${sy.conf}%`;
   document.getElementById('inspect-'+k).innerHTML=renderInspect(k,sy);
 }
@@ -445,11 +491,9 @@ const evWord=s=>s>=62?'pos':s>=48?'mix':'neg';
 // ---------- compute / render ----------
 // explicit evidence-state framework: Available / Weak / Unavailable (about the evidence, not the verdict)
 function evidenceState(k){
-  if(!conn[k]) return {label:'Evidence Unavailable',cls:'es-unavail'};
-  const sy=synth(k,ADS[ad]);
-  if(!sy.avail) return {label:'Evidence Unavailable',cls:'es-unavail'};
-  if(sy.conf<55) return {label:'Evidence Weak',cls:'es-weak'};
-  return {label:'Evidence Available',cls:'es-avail'};
+  if(conn[k]){const sy=synth(k,ADS[ad]); if(sy.avail) return sy.conf<55?{label:'Evidence Weak',cls:'es-weak'}:{label:'Evidence Available',cls:'es-avail'};}
+  if(aiFill&&aiEstimate(k)) return {label:'AI-Derived',cls:'es-ai'};
+  return {label:'Evidence Unavailable',cls:'es-unavail'};
 }
 function renderCoverage(){
   const wrap=document.getElementById('evCoverage');wrap.innerHTML='';
@@ -467,12 +511,11 @@ function supportingVerbatim(id,ev){
 }
 function compute(){
   const connKeys=CHAIN.filter(k=>conn[k]);
-  const keys=connKeys.filter(k=>synth(k,ADS[ad]).avail);
   document.getElementById('covTxt').textContent=connKeys.length+'/3';
   renderChips();renderTriage();renderCoverage();
   const cisEl=document.getElementById('cisScore');
-  if(keys.length===0){renderAdvisor(null);renderFunnel(null);cisEl.textContent='—';cisEl.style.color=COLORS.dim;return;}
-  const ev=evaluate(ad,keys);
+  const ev=evaluateCurrent();
+  if(!ev.keys.length){renderAdvisor(null);renderFunnel(null);cisEl.textContent='—';cisEl.style.color=COLORS.dim;return;}
   renderAdvisor(ev);renderFunnel(ev);
   cisEl.textContent=ev.cis;cisEl.style.color=scoreColor(ev.cis);
 }
@@ -489,14 +532,15 @@ function renderAdvisor(ev){
   badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
   document.getElementById('recCard').style.borderColor=A.color;
   document.getElementById('recHeadline').textContent=ev.headline;
-  // STAGE 1 evidence
+  // STAGE 1 evidence (what happened) — measured + AI-derived, with provenance
   evl.innerHTML='';
   CHAIN.forEach(k=>{
-    if(!conn[k]){const li=document.createElement('li');li.className='neu';li.innerHTML=`<span class="srcname">${CATS[k].src}</span> — not connected.`;evl.appendChild(li);return;}
-    const sy=synth(k,ADS[ad]);
-    const li=document.createElement('li');
-    if(!sy.avail){li.className='neu';li.innerHTML=`<span class="srcname">${CATS[k].src}</span> — <b>Evidence Unavailable</b> for this campaign.`;}
-    else{const w=evWord(sy.score);li.className=w;li.innerHTML=`<span class="srcname">${CATS[k].src}</span> shows ${EVID[k][w]}.`;}
+    const r=ev.reads[k], li=document.createElement('li');
+    if(!r.avail){li.className='neu';
+      li.innerHTML=r.connected?`<span class="srcname">${CATS[k].src}</span> — <b>Evidence Unavailable</b> (no measured data for this ad).`:`<span class="srcname">${CATS[k].src}</span> — not connected.`;}
+    else if(r.provenance==='ai'){li.className='ai';
+      li.innerHTML=`<span class="srcname">CIS AI</span> estimates ${EVID[k][evWord(r.score)]}<span class="aitag">AI-derived</span>`;}
+    else{const w=evWord(r.score);li.className=w;li.innerHTML=`<span class="srcname">${CATS[k].src}</span> shows ${EVID[k][w]}.`;}
     evl.appendChild(li);
   });
   // verbatims
@@ -511,7 +555,9 @@ function renderAdvisor(ev){
     : 'The chain reads consistently — no single stage stands out as the constraint.';
   // STAGE 3 recommendation — cite the verbatim that evidences the call
   const sv=supportingVerbatim(ad,ev);
-  document.getElementById('nextAction').innerHTML=ev.action+(sv?`<span class="raquote">Consumers said it themselves: “${sv.q}”</span>`:'');
+  let na=ev.action+(sv?`<span class="raquote">Consumers said it themselves: “${sv.q}”</span>`:'');
+  if(ev.aiKeys&&ev.aiKeys.length) na+=`<span style="display:block;margin-top:7px;font-size:11.5px;color:var(--test)">⚠ Includes AI-estimated evidence for ${ev.aiKeys.map(k=>CATS[k].name.replace(' Evidence','')).join(', ')} — provisional; treat as a hypothesis until measured.</span>`;
+  document.getElementById('nextAction').innerHTML=na;
   document.getElementById('confFill').style.width=ev.conf+'%';
   document.getElementById('confFill').style.background=ev.conf>=65?COLORS.good:ev.conf>=45?COLORS.warn:COLORS.bad;
   document.getElementById('confTxt').textContent=ev.conf+'% '+(ev.conf>=65?'· solid':ev.conf>=45?'· moderate':'· thin');
@@ -524,21 +570,23 @@ function renderVerb(){
   return out;
 }
 function chipState(k){
-  if(!conn[k]) return {label:'Tap to connect',cls:'q-unknown',dot:COLORS.dim};
-  const sy=synth(k,ADS[ad]);
-  if(!sy.avail) return {label:'Evidence Unavailable',cls:'q-unknown',dot:COLORS.dim};
-  const w=evWord(sy.score);
-  return {label:w==='pos'?'Strong':w==='mix'?'Mixed':'Weak',cls:w==='pos'?'q-strong':w==='mix'?'q-mixed':'q-weak',dot:scoreColor(sy.score)};
+  const r=catRead(k);
+  if(!r.avail) return {label:r.connected?'Evidence Unavailable':'Tap to connect',cls:'q-unknown',dot:COLORS.dim,prov:'none'};
+  if(r.provenance==='ai') return {label:'AI-derived',cls:'q-ai',dot:COLORS.test,prov:'ai'};
+  const w=evWord(r.score);
+  return {label:w==='pos'?'Strong':w==='mix'?'Mixed':'Weak',cls:w==='pos'?'q-strong':w==='mix'?'q-mixed':'q-weak',dot:scoreColor(r.score),prov:'measured'};
 }
 function renderChips(){
   const wrap=document.getElementById('chips');wrap.innerHTML='';
   CHAIN.forEach(k=>{const c=CATS[k],q=chipState(k);
+    const src=q.prov==='ai'?'CIS AI · provisional':c.src;
+    const reveal=q.prov==='measured'?'tap for the measures →':q.prov==='ai'?'AI estimate — connect a source to confirm':'tap to connect →';
     const chip=document.createElement('div');chip.className='chip';
-    chip.innerHTML=`<div class="chipDom">${c.name}</div><div class="chipSrc">${c.src}</div>
+    chip.innerHTML=`<div class="chipDom">${c.name}</div><div class="chipSrc">${src}</div>
       <div class="chipState ${q.cls}"><span class="chipDot" style="background:${q.dot}"></span>${q.label}</div>
-      <div class="chipReveal">${conn[k]?'tap for the measures →':'tap to connect →'}</div>`;
+      <div class="chipReveal">${reveal}</div>`;
     chip.addEventListener('click',()=>chipClick(k));wrap.appendChild(chip);});
-  document.getElementById('chipLegend').innerHTML='Each category is a synthesis of its underlying measures. Tap to open the source and see every measure indexed against category norm, plus the verbatims behind the emotional scores.';
+  document.getElementById('chipLegend').innerHTML='Each category synthesizes its underlying measures. Measured evidence comes from the source; where none exists, an <b>AI-derived</b> estimate from the ad content fills the gap (provisional). Tap a category for the measures.';
 }
 function chipClick(k){if(!conn[k]){connect(k);return;}
   const p=document.getElementById('inspect-'+k),t=document.getElementById('ins-'+k);
@@ -568,25 +616,29 @@ function renderFunnel(ev){
     f.appendChild(row);
     if(i<CHAIN.length-1){const a=document.createElement('div');a.className='farrow';a.textContent='↓';f.appendChild(a);}});funnelBuilt=true;}
   CHAIN.forEach(k=>{const row=document.getElementById('f-'+k),bar=document.getElementById('fbar-'+k),sc=document.getElementById('fscore-'+k);
-    const connected=conn[k],sy=connected?synth(k,ADS[ad]):null;
-    if(connected&&sy.avail){row.className='fstage';bar.style.width=sy.score+'%';bar.style.background=scoreColor(sy.score);sc.textContent=stateWord(sy.score)+' · '+sy.score;}
-    else{row.className='fstage empty';bar.style.width='0';sc.textContent=connected?'Evidence Unavailable':'not connected';}});
+    const r=catRead(k);
+    if(r.avail&&r.provenance==='measured'){row.className='fstage';bar.style.width=r.score+'%';bar.style.background=scoreColor(r.score);sc.textContent=stateWord(r.score)+' · '+r.score;}
+    else if(r.avail&&r.provenance==='ai'){row.className='fstage ai';bar.style.width=r.score+'%';bar.style.background=COLORS.test;sc.textContent='AI · '+r.score;}
+    else{row.className='fstage empty';bar.style.width='0';sc.textContent=r.connected?'Evidence Unavailable':'not connected';}});
   document.querySelectorAll('.fstage').forEach(el=>el.classList.remove('bottleneck'));
   if(ev&&ev.bl){const el=document.getElementById('f-'+ev.bl);if(el)el.classList.add('bottleneck');}
 }
 
 // ================= CONSULTANT BOT (grounded; never invents) =================
-function whatIf(id,dk,dir){const keys=availOf(id);const base=evaluate(id,keys);
-  const ad2=ADS[id], s={};keys.forEach(k=>s[k]=synth(k,ad2));const nv=dir==='strong'?72:35;
-  const S=k=>k===dk?nv:s[k].score, has=k=>keys.includes(k);
-  const sentiment=(dk==='creative')?(dir==='strong'?'pos':'neg'):(keys.includes('creative')?ad2.creative.sentiment:'pos');
-  const conf=base.conf;const d=decide(S,has,sentiment,conf,ad2.spend);
-  return {base,newRec:d.rec};}
+function whatIf(dk,dir){
+  const base=evaluateCurrent(), reads=base.reads, nv=dir==='strong'?72:35;
+  const keys=base.keys.includes(dk)?base.keys:base.keys.concat(dk);
+  const S=k=>k===dk?nv:(reads[k]&&reads[k].avail?reads[k].score:0), has=k=>keys.includes(k);
+  const sentiment=(dk==='creative')?(dir==='strong'?'pos':'neg'):base.sentiment;
+  const d=decide(S,has,sentiment,base.conf,ADS[ad].spend);
+  return {base,newRec:d.rec};
+}
 function whyAnswer(ev,id){
   const confWord=ev.conf>=65?'solid':ev.conf>=45?'moderate':'thin';
   let out=`I'd say <b>${ACTION[ev.rec].label}</b> on <b>${ADS[id].short}</b> — and I'm ${confWord}ly confident (${ev.conf}%). ${ev.headline}<br><br>Here's the evidence I'm reading:<ul class="botul">`;
-  CHAIN.forEach(k=>{const sy=ev.s[k];if(!sy){out+=`<li>${CATS[k].name}: not in evidence here</li>`;return;}
-    out+=`<li>${CATS[k].src} — ${CATS[k].name.replace(' Evidence','')}: ${EVID[k][evWord(sy.score)]}</li>`;});
+  CHAIN.forEach(k=>{const r=ev.reads[k];if(!r||!r.avail){out+=`<li>${CATS[k].name}: not in evidence here</li>`;return;}
+    if(r.provenance==='ai')out+=`<li><b>CIS AI</b> — ${CATS[k].name.replace(' Evidence','')}: estimates ${EVID[k][evWord(r.score)]} <i>(AI-derived, provisional)</i></li>`;
+    else out+=`<li>${CATS[k].src} — ${CATS[k].name.replace(' Evidence','')}: ${EVID[k][evWord(r.score)]}</li>`;});
   out+='</ul>';
   const v=qualVerdict(id);
   if(v&&(v.tag==='Conflicting'||v.tag==='Polarizing'))out+=`The quant and the verbatims are <b>${v.tag.toLowerCase()}</b>: ${v.text}<br>`;
@@ -594,10 +646,11 @@ function whyAnswer(ev,id){
   else out+=ev.action;
   const sv=supportingVerbatim(id,ev);
   if(sv)out+=`<span class="botquote">Consumers said it themselves: “${sv.q}”</span>`;
+  if(ev.aiKeys&&ev.aiKeys.length)out+=`<span class="botnote">Part of this read is AI-estimated (${ev.aiKeys.map(k=>CATS[k].name.replace(' Evidence','')).join(', ')}) — provisional until measured.</span>`;
   return out;
 }
 function askConsultant(qRaw){
-  const q=qRaw.toLowerCase().trim(), keys=availOf(ad), ev=evaluate(ad,keys);
+  const q=qRaw.toLowerCase().trim(), ev=evaluateCurrent(), keys=ev.keys;
   if(q===''||/^(help|hi|hello|hey|what can you|who are you)/.test(q))
     return `I'm the CIS consultant. I answer <b>only from the evidence CIS has synthesized</b> — never guesswork. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What do consumers say?”</li><li>“What if the brand link improves?”</li><li>“Which ads should I stop?”</li><li>“Summarize the portfolio.”</li></ul>`;
   if(/(portfolio|summar|overview|all (ad|campaign)|triage|everything)/.test(q)){
@@ -616,8 +669,8 @@ function askConsultant(qRaw){
   if(/what if|what would happen|suppose|if .*(improve|fix|increase|raise|boost|worsen|drop|lower|reduce|better|worse)/.test(q)){
     const dk=/brand|recall|linkage|stick/.test(q)?'brand':/business|sales|outcome|conversion|revenue/.test(q)?'business':/creativ|\bad\b|attention|likab|emotion/.test(q)?'creative':null;
     if(!dk)return `Name the lever and I'll model it — e.g. “what if <b>brand linkage</b> improves?” or “what if <b>creative</b> gets worse?”`;
-    if(!keys.includes(dk))return `${CATS[dk].name} is Evidence Unavailable for ${ADS[ad].short}, so I can't model that lever here.`;
-    const dir=/(worse|drop|lower|reduce|weak|decline|down|fail)/.test(q)?'weak':'strong', wi=whatIf(ad,dk,dir), verb=dir==='strong'?'improved to Strong':'fell to Weak';
+    if(!keys.includes(dk))return `${CATS[dk].name} is Evidence Unavailable for ${ADS[ad].short} — connect a source or turn on AI fill, and I can model that lever.`;
+    const dir=/(worse|drop|lower|reduce|weak|decline|down|fail)/.test(q)?'weak':'strong', wi=whatIf(dk,dir), verb=dir==='strong'?'improved to Strong':'fell to Weak';
     if(wi.base.rec!==wi.newRec)return `If <b>${CATS[dk].name}</b> ${verb} on <b>${ADS[ad].short}</b>, the recommendation would shift from <b>${ACTION[wi.base.rec].label}</b> to <b>${ACTION[wi.newRec].label}</b>.<span class="botnote">Computed by re-running the engine — not estimated.</span>`;
     return `If <b>${CATS[dk].name}</b> ${verb} on <b>${ADS[ad].short}</b>, the call would stay <b>${ACTION[wi.base.rec].label}</b>.<span class="botnote">Computed by re-running the engine.</span>`;
   }

@@ -17,6 +17,22 @@
   .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 14px;font-weight:600;display:flex;align-items:center;gap:8px}
   .cov{margin-left:auto;font-size:11px;color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0}
   .cov b{color:var(--txt);font-variant-numeric:tabular-nums}
+  /* architecture strip */
+  .arch{display:flex;align-items:stretch;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .archBox{flex:1;min-width:200px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .archBox.orion{border-color:rgba(110,168,254,.45);background:rgba(110,168,254,.06)}
+  .archT{font-size:12.5px;font-weight:700;color:var(--txt)}
+  .archBox.orion .archT{color:var(--accent)}
+  .archS{font-size:11px;color:var(--dim);margin-top:3px;line-height:1.4}
+  .archOp{display:flex;align-items:center;color:var(--dim);font-size:18px;font-weight:700}
+  @media(max-width:760px){.archOp{display:none}}
+  .knote{font-size:13px;color:var(--muted);margin:10px 0 0;line-height:1.5;border-left:2px solid rgba(110,168,254,.4);padding-left:11px}
+  .knote b{color:var(--accent)}
+  .isolation{font-size:11px;color:var(--dim);margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .isoLock{color:var(--good)}
+  .optin{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--dim);cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:6px 9px;user-select:none}
+  .optin input{accent-color:var(--accent)}
+  .knowCard ul{margin:6px 0 0;padding-left:18px} .knowCard li{font-size:12.5px;color:var(--muted);margin:3px 0}
   .selects{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
   .selwrap{flex:1;min-width:220px}
   .selwrap label{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
@@ -170,20 +186,31 @@
 <body>
 <div class="wrap">
   <header>
-    <span class="tag">Working Prototype · Evidence Synthesis Engine</span>
+    <span class="tag">Working Prototype · Marketing Evidence Orchestrator</span>
     <h1>Creative Intelligence System</h1>
+    <p style="font-size:13px;color:var(--muted);margin:-2px 0 10px">The Marketing Evidence Orchestrator — powered by <b style="color:var(--accent)">ORION</b>, the reasoning engine.</p>
     <p style="font-size:15px;color:var(--txt);max-width:840px;font-weight:600;margin-bottom:8px">Marketing doesn’t suffer from a lack of data. It suffers from a lack of explanation.</p>
     <p>CIS answers the three questions every marketer keeps asking — <b>What happened? Why did it happen? What
        should we do next?</b> — by synthesizing the creative-effectiveness evidence you already collect but rarely
        connect: emotional measures, creative attributes, attention, consumer verbatims, brand response, and — the
        bridge to marketplace performance — <b>effectiveness &amp; business outcomes</b>. It organizes everything as
-       a chain — <b>Creative → Brand → Business</b> — and finds where it breaks down.</p>
+       a chain — <b>Creative → Brand → Business</b> — and finds where it breaks down. <b>ORION</b> reasons over your
+       evidence and a shared marketing-knowledge layer to explain what happened, why, and what to do next — and
+       <b>your evidence stays isolated; it never trains a shared model.</b></p>
     <p style="font-size:12px;color:var(--dim);max-width:840px">The campaigns are <b>real, recognizable ads</b>;
        the measures mirror the <b>Ace Metrix / iSpot</b> model (Likeability, emotional metrics, attributes vs.
        category norm, brand recall, intent, outcomes). Signal values are <b>illustrative reconstructions</b> of each
        ad's public reputation — not actual vendor scores. Gaps show honestly as "Evidence Unavailable" — and where no
        measured evidence exists, CIS can offer an <b>AI-derived estimate</b> from the ad content, clearly labeled and provisional.</p>
   </header>
+
+  <div class="arch">
+    <div class="archBox"><div class="archT">Your Private Evidence</div><div class="archS">creative tests · surveys · MMM · sales · verbatims — isolated in your tenant, never pooled</div></div>
+    <div class="archOp">+</div>
+    <div class="archBox"><div class="archT">Shared Marketing Knowledge</div><div class="archS">public marketing science · published research · vendor category norms — no client data</div></div>
+    <div class="archOp">→</div>
+    <div class="archBox orion"><div class="archT">ORION reasons</div><div class="archS">what happened · why · what to do next</div></div>
+  </div>
 
   <div class="selects">
     <div class="selwrap">
@@ -209,6 +236,7 @@
       <div class="stageHd"><span class="stageNo">2</span> Interpretation — why did it happen?</div>
       <div id="agreeBlock"></div>
       <p class="blnote2" id="blNote">—</p>
+      <p class="knote" id="knNote"></p>
     </div>
     <div class="stage">
       <div class="stageHd"><span class="stageNo">3</span> Recommendation — what should we do next?</div>
@@ -227,10 +255,26 @@
     <div class="chipLegend" id="chipLegend"></div>
   </div>
 
-  <!-- SOURCES -->
+  <!-- PRIVATE EVIDENCE LAYER -->
   <div class="card">
-    <h2>Evidence Sources <span class="cov">connected <b id="covTxt">0/3</b></span></h2>
+    <h2>Your Private Evidence <span class="cov">connected <b id="covTxt">0/3</b></span></h2>
     <div id="connectors"></div>
+    <div class="isolation">
+      <span class="isoLock">🔒</span> Your evidence stays in your tenant. ORION reasons over it — it is never pooled into a shared model.
+      <label class="optin"><input type="checkbox" id="optin"> Contribute de-identified benchmarks (off — you control this)</label>
+    </div>
+    <div class="hint" id="optinNote" style="display:none;margin-top:8px">Opt-in benchmarking would share only de-identified, aggregated patterns — never raw evidence, verbatims, or campaign data. Off by default. (Illustrative.)</div>
+  </div>
+
+  <!-- SHARED KNOWLEDGE LAYER -->
+  <div class="card knowCard">
+    <h2>Shared Marketing Knowledge <span class="cov">public · no client data</span></h2>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 4px">The foundation ORION reasons with — built only from non-proprietary sources, shared across all clients without exposing anyone's evidence:</p>
+    <ul>
+      <li>Published marketing science & academic research (brand building vs. activation, distinctive assets, attention)</li>
+      <li>Vendor <b>category norms</b> (e.g., Ace Metrix / iSpot benchmarks) — what "good" looks like by category</li>
+      <li>Public campaign examples and creative-effectiveness case studies</li>
+    </ul>
   </div>
 
   <!-- TRIAGE -->
@@ -251,16 +295,17 @@
   </details>
 
   <footer>
-    A research prototype. Evidence sources are simulated and signal values are illustrative reconstructions of public
-    ad reputation — directional, not actual vendor data. The narrative leads; measures sit under each category and
-    under the hood, one tap away, so a recommendation is never a black box.
+    A research prototype of the Marketing Evidence Orchestrator. Evidence sources are simulated and signal values are
+    illustrative reconstructions of public ad reputation — directional, not actual vendor data. Architecture: your
+    private evidence stays isolated; ORION reasons over it using a shared marketing-knowledge layer built only from
+    public science and vendor norms — your data never trains a shared model. Measures sit one tap away under each category.
   </footer>
 </div>
 
 <!-- CONSULTANT BOT -->
-<div id="botFab" class="botFab">💬 Ask the CIS Consultant</div>
+<div id="botFab" class="botFab">💬 Ask ORION</div>
 <div id="botPanel" class="botPanel">
-  <div class="botHead"><div><b>CIS Consultant</b><div class="botSub">answers only from synthesized evidence — never guesswork</div></div><span id="botClose" class="botClose">✕</span></div>
+  <div class="botHead"><div><b>ORION</b><div class="botSub">the reasoning engine · your evidence + marketing science, never guesswork</div></div><span id="botClose" class="botClose">✕</span></div>
   <div id="botMsgs" class="botMsgs"></div>
   <div id="botChips" class="botChips"></div>
   <div class="botInputRow"><input id="botInput" class="botInput" placeholder="Ask why, a what-if, or for a summary…" autocomplete="off"><button id="botSend" class="botSend">Send</button></div>
@@ -443,6 +488,7 @@ document.getElementById('adHint').textContent=ADS[ad].name;
 document.getElementById('connectAll').addEventListener('click',()=>CHAIN.forEach((k,i)=>{if(!conn[k])setTimeout(()=>connect(k),i*280);}));
 document.getElementById('disconnectAll').addEventListener('click',()=>{CHAIN.forEach(disconnect);compute();});
 document.getElementById('aiFill').addEventListener('change',e=>{aiFill=e.target.checked;CHAIN.forEach(k=>{if(conn[k])pull(k);});compute();});
+document.getElementById('optin').addEventListener('change',e=>{document.getElementById('optinNote').style.display=e.target.checked?'block':'none';});
 
 // ---------- connect ----------
 function toggleConnect(k){conn[k]?disconnect(k):connect(k);if(!conn[k])compute();}
@@ -488,6 +534,27 @@ const EVID={
 };
 const evWord=s=>s>=62?'pos':s>=48?'mix':'neg';
 
+// ---------- shared marketing-knowledge layer (public science — never client data) ----------
+const KNOWLEDGE={
+  brandgap:'Distinctive brand assets and early, integral branding drive recall — emotionally beloved ads that don’t cue the brand rarely convert attention into sales (Romaniuk on distinctive assets; Field & Binet).',
+  negative:'Attention is not affinity. Creative that provokes a negative emotional response can depress brand favorability even as it lifts awareness.',
+  weakcreative:'Creative quality is the single largest in-market lever on advertising effectiveness — weak execution caps everything downstream (industry meta-analyses).',
+  activation:'Brand-building and sales activation are distinct mechanisms — strong brand response that isn’t converting usually points to the activation path, not the creative (Field & Binet, “The Long and the Short of It”).',
+  scale:'When creative, brand and outcomes align, holding share of voice above share of market tends to grow share over time (excess SOV).',
+  polarizing:'Polarizing creative can build salience and loyalty in a target segment while alienating others — judge it against the strategic objective, not aggregate sentiment.',
+  default:'Marketing outcomes are a chain — context shapes attention, attention shapes interpretation, interpretation shapes brand and behaviour. Read the chain, not a single metric.'
+};
+function knowledgeFor(ev){
+  if(!ev) return KNOWLEDGE.default;
+  if(ev.sentiment==='neg') return KNOWLEDGE.negative;
+  if(ev.sentiment==='mixed') return KNOWLEDGE.polarizing;
+  if(ev.rec==='OPTIMIZE'&&ev.bl==='brand') return KNOWLEDGE.brandgap;
+  if(ev.rec==='OPTIMIZE'&&ev.bl==='business') return KNOWLEDGE.activation;
+  if(ev.rec==='TEST') return KNOWLEDGE.weakcreative;
+  if(ev.rec==='SCALE') return KNOWLEDGE.scale;
+  return KNOWLEDGE.default;
+}
+
 // ---------- compute / render ----------
 // explicit evidence-state framework: Available / Weak / Unavailable (about the evidence, not the verdict)
 function evidenceState(k){
@@ -526,7 +593,7 @@ function renderAdvisor(ev){
     document.getElementById('recHeadline').textContent='Connect evidence to begin.';
     evl.innerHTML='<li class="neu">No evidence connected yet.</li>';
     document.getElementById('verbBlock').innerHTML='';document.getElementById('agreeBlock').innerHTML='';
-    document.getElementById('blNote').textContent='—';document.getElementById('nextAction').textContent='—';
+    document.getElementById('blNote').textContent='—';document.getElementById('knNote').innerHTML='';document.getElementById('nextAction').textContent='—';
     document.getElementById('confFill').style.width='0';document.getElementById('confTxt').textContent='—';return;}
   const A=ACTION[ev.rec];
   badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
@@ -553,6 +620,7 @@ function renderAdvisor(ev){
   document.getElementById('blNote').innerHTML = ev.bl
     ? `Reading the chain together, it breaks down at <b>${CATS[ev.bl].name}</b> — that's the stage holding everything else back.`
     : 'The chain reads consistently — no single stage stands out as the constraint.';
+  document.getElementById('knNote').innerHTML = `<b>From shared marketing knowledge:</b> ${knowledgeFor(ev)}`;
   // STAGE 3 recommendation — cite the verbatim that evidences the call
   const sv=supportingVerbatim(ad,ev);
   let na=ev.action+(sv?`<span class="raquote">Consumers said it themselves: “${sv.q}”</span>`:'');
@@ -635,13 +703,14 @@ function whatIf(dk,dir){
 }
 function whyAnswer(ev,id){
   const confWord=ev.conf>=65?'solid':ev.conf>=45?'moderate':'thin';
-  let out=`I'd say <b>${ACTION[ev.rec].label}</b> on <b>${ADS[id].short}</b> — and I'm ${confWord}ly confident (${ev.conf}%). ${ev.headline}<br><br>Here's the evidence I'm reading:<ul class="botul">`;
+  let out=`I'd say <b>${ACTION[ev.rec].label}</b> on <b>${ADS[id].short}</b> — and I'm ${confWord}ly confident (${ev.conf}%). ${ev.headline}<br><br>From <b>your private evidence</b>:<ul class="botul">`;
   CHAIN.forEach(k=>{const r=ev.reads[k];if(!r||!r.avail){out+=`<li>${CATS[k].name}: not in evidence here</li>`;return;}
     if(r.provenance==='ai')out+=`<li><b>CIS AI</b> — ${CATS[k].name.replace(' Evidence','')}: estimates ${EVID[k][evWord(r.score)]} <i>(AI-derived, provisional)</i></li>`;
     else out+=`<li>${CATS[k].src} — ${CATS[k].name.replace(' Evidence','')}: ${EVID[k][evWord(r.score)]}</li>`;});
   out+='</ul>';
   const v=qualVerdict(id);
   if(v&&(v.tag==='Conflicting'||v.tag==='Polarizing'))out+=`The quant and the verbatims are <b>${v.tag.toLowerCase()}</b>: ${v.text}<br>`;
+  out+=`From <b>shared marketing knowledge</b>: ${knowledgeFor(ev)}<br>`;
   if(ev.bl)out+=`Where it breaks down: <b>${CATS[ev.bl].name}</b>. So my advice — ${ev.action}`;
   else out+=ev.action;
   const sv=supportingVerbatim(id,ev);
@@ -652,7 +721,7 @@ function whyAnswer(ev,id){
 function askConsultant(qRaw){
   const q=qRaw.toLowerCase().trim(), ev=evaluateCurrent(), keys=ev.keys;
   if(q===''||/^(help|hi|hello|hey|what can you|who are you)/.test(q))
-    return `I'm the CIS consultant. I answer <b>only from the evidence CIS has synthesized</b> — never guesswork. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What do consumers say?”</li><li>“What if the brand link improves?”</li><li>“Which ads should I stop?”</li><li>“Summarize the portfolio.”</li></ul>`;
+    return `I'm <b>ORION</b>, the reasoning engine. I reason over <b>your private evidence</b> and a <b>shared marketing-knowledge layer</b> — only from evidence, never guesswork, and your data is never pooled. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What do consumers say?”</li><li>“What if the brand link improves?”</li><li>“Which ads should I stop?”</li><li>“Summarize the portfolio.”</li></ul>`;
   if(/(portfolio|summar|overview|all (ad|campaign)|triage|everything)/.test(q)){
     const g={SCALE:[],OPTIMIZE:[],TEST:[],STOP:[]};Object.keys(ADS).forEach(id=>g[evaluate(id,availOf(id)).rec].push(ADS[id].short));
     let out=`Across all ${Object.keys(ADS).length} ads:<ul class="botul">`;
@@ -699,7 +768,7 @@ function askConsultant(qRaw){
   function add(html,who){const m=document.createElement('div');m.className='bmsg '+who;m.innerHTML=html;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight;}
   function send(text){const t=(text!==undefined?text:input.value).trim();if(!t)return;add(esc(t),'user');input.value='';setTimeout(()=>add(askConsultant(t),'bot'),200);}
   fab.addEventListener('click',()=>{panel.classList.add('open');fab.style.display='none';
-    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm the CIS consultant, currently looking at <b>${ADS[ad].short}</b>. I answer only from the evidence CIS has synthesized. Ask me why, a what-if, or for a portfolio summary.`,'bot');}input.focus();});
+    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm <b>ORION</b>, the reasoning engine behind CIS, currently looking at <b>${ADS[ad].short}</b>. I reason over your private evidence and a shared marketing-knowledge layer — only from evidence. Ask me why, a what-if, or for a portfolio summary.`,'bot');}input.focus();});
   document.getElementById('botClose').addEventListener('click',()=>{panel.classList.remove('open');fab.style.display='block';});
   document.getElementById('botSend').addEventListener('click',()=>send());
   input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});

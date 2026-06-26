@@ -63,6 +63,14 @@
   .cmName{font-weight:650;font-size:12.5px}
   .cmSrc{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.3px;margin-left:8px}
   .cmText{font-size:13px;color:var(--txt);line-height:1.45;margin-top:2px}
+  /* ORION synthesis block */
+  .orionSynth{margin-top:13px;background:rgba(110,168,254,.06);border:1px solid rgba(110,168,254,.25);border-radius:11px;padding:12px 13px}
+  .synthHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);font-weight:700;margin-bottom:8px}
+  /* two meters */
+  .meters{display:flex;flex-direction:column;gap:12px}
+  .meterRow{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .meterRow span:last-child{font-variant-numeric:tabular-nums;color:var(--txt);font-weight:600}
+  .meterSub{font-size:10.5px;color:var(--dim);margin-top:4px}
   .verb{margin-top:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
   .verb:empty{display:none}
   .verbHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:9px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -236,22 +244,29 @@
     <div class="recHead"><span class="recBadge" id="recBadge">—</span><div class="heroHeadline" id="recHeadline">Connect evidence to begin.</div></div>
     <div class="flow">What happened? → Why did it happen? → What should we do next?</div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">1</span> Evidence — the council weighs in</div>
-      <div class="council" id="council"></div>
+      <div class="stageHd"><span class="stageNo">1</span> Evidence — what happened?</div>
+      <ul class="ev" id="evList"><li class="neu">No evidence connected yet.</li></ul>
       <div class="verb" id="verbBlock"></div>
     </div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">2</span> Interpretation — why did it happen?</div>
-      <div id="agreeBlock"></div>
-      <p class="blnote2" id="blNote">—</p>
-      <p class="knote" id="knNote"></p>
+      <div class="stageHd"><span class="stageNo">2</span> Executive Briefing — why did it happen?</div>
+      <div class="council" id="council"></div>
+      <div class="orionSynth">
+        <div class="synthHd">◆ ORION&#39;s synthesis</div>
+        <div id="agreeBlock"></div>
+        <p class="blnote2" id="blNote">—</p>
+        <p class="knote" id="knNote"></p>
+      </div>
     </div>
     <div class="stage">
       <div class="stageHd"><span class="stageNo">3</span> Recommendation — what should we do next?</div>
       <p class="nextAction" id="nextAction">—</p>
     </div>
     <div class="advFoot">
-      <div><div class="confRow"><span>How sure we are — evidence quality</span><span id="confTxt">—</span></div><div class="confbar"><div class="conffill" id="confFill" style="width:0"></div></div></div>
+      <div class="meters">
+        <div class="meter"><div class="meterRow"><span>Evidence Strength</span><span id="strTxt">—</span></div><div class="confbar"><div class="conffill" id="strFill" style="width:0"></div></div><div class="meterSub">how consistently the evidence supports this call</div></div>
+        <div class="meter"><div class="meterRow"><span>Decision Readiness</span><span id="rdyTxt">—</span></div><div class="confbar"><div class="conffill" id="rdyFill" style="width:0"></div></div><div class="meterSub">whether there's enough evidence to act</div></div>
+      </div>
       <div class="missing"><h3>Evidence coverage</h3><div class="evcov" id="evCoverage"></div></div>
     </div>
   </div>
@@ -432,8 +447,20 @@ function evaluateCurrent(){
   const sentiment=(reads.creative.avail&&reads.creative.sentiment)?reads.creative.sentiment:'pos';
   const bl=bottleneck(S,keys), d=decide(S,has,sentiment,conf,ADS[ad].spend);
   const aiKeys=keys.filter(k=>reads[k].provenance==='ai');
-  return {reads,keys,conf,cis,sentiment,bl,aiKeys,...d};
+  // Decision Readiness — do we have enough trustworthy evidence to act?
+  const measuredN=keys.filter(k=>reads[k].provenance==='measured').length;
+  const measuredFrac=(measuredN+0.5*aiKeys.length)/CHAIN.length;
+  const readiness=c1(R(100*(0.5*measuredFrac+0.5*conf/100)));
+  // Evidence Strength — how consistently do the available reads point the same way?
+  const dirs=keys.map(k=>reads[k].score>=62?1:reads[k].score<48?-1:0);
+  const posN=dirs.filter(x=>x>0).length, negN=dirs.filter(x=>x<0).length, mixN=dirs.filter(x=>x===0).length;
+  let strength=keys.length?R(100*(Math.max(posN,negN)+0.5*mixN)/keys.length):0;
+  if(conf<45) strength=Math.min(strength,40);
+  if(sentiment==='mixed') strength=Math.max(0,strength-20);
+  strength=c1(strength);
+  return {reads,keys,conf,cis,sentiment,bl,aiKeys,strength,readiness,...d};
 }
+const meterWord=(v,kind)=>kind==='str'?(v>=70?'· strong':v>=45?'· moderate':'· limited'):(v>=70?'· ready':v>=45?'· partial':'· gather more');
 
 // ---------- qualitative verdict (quant creative vs verbatim sentiment) ----------
 function qualVerdict(id){
@@ -640,44 +667,52 @@ function compute(){
   renderAdvisor(ev);renderFunnel(ev);
   cisEl.textContent=ev.cis;cisEl.style.color=scoreColor(ev.cis);
 }
+function setMeter(id,v){
+  const fill=document.getElementById(id+'Fill'), txt=document.getElementById(id+'Txt');
+  fill.style.width=v+'%';fill.style.background=v>=70?COLORS.good:v>=45?COLORS.warn:COLORS.bad;
+  txt.textContent=v+'% '+meterWord(v,id);
+}
 function renderAdvisor(ev){
-  const badge=document.getElementById('recBadge');
+  const badge=document.getElementById('recBadge'), evl=document.getElementById('evList'), council=document.getElementById('council');
   if(!ev){badge.textContent='—';badge.style.background=COLORS.dim;badge.style.color='#fff';
     document.getElementById('recCard').style.borderColor='var(--line)';
     document.getElementById('recHeadline').textContent='Connect evidence to begin.';
-    document.getElementById('council').innerHTML='<div class="cmText" style="color:var(--dim)">No evidence connected yet — connect a source, or let ORION reason from the shared knowledge layer.</div>';
+    evl.innerHTML='<li class="neu">No evidence connected yet.</li>';
+    council.innerHTML='<div class="cmText" style="color:var(--dim)">Connect a source, or let ORION reason from the shared knowledge layer.</div>';
     document.getElementById('verbBlock').innerHTML='';document.getElementById('agreeBlock').innerHTML='';
     document.getElementById('blNote').textContent='—';document.getElementById('knNote').innerHTML='';document.getElementById('nextAction').textContent='—';
-    document.getElementById('confFill').style.width='0';document.getElementById('confTxt').textContent='—';return;}
+    setMeter('str',0);setMeter('rdy',0);return;}
   const A=ACTION[ev.rec];
   badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
   document.getElementById('recCard').style.borderColor=A.color;
   document.getElementById('recHeadline').textContent=ev.headline;
-  // STAGE 1 evidence — the executive council: each discipline contributes its perspective
-  const council=document.getElementById('council');
+  // STAGE 1 — Evidence: the facts each source reported
+  evl.innerHTML='';
+  CHAIN.forEach(k=>{const r=ev.reads[k], li=document.createElement('li');
+    if(!r.avail){li.className='neu';li.innerHTML=r.connected?`<span class="srcname">${CATS[k].src}</span> — <b>Evidence Unavailable</b> (no measured data for this ad).`:`<span class="srcname">${CATS[k].src}</span> — not connected.`;}
+    else if(r.provenance==='ai'){li.className='ai';li.innerHTML=`<span class="srcname">CIS AI</span> estimates ${EVID[k][evWord(r.score)]}<span class="aitag">AI-derived</span>`;}
+    else{const w=evWord(r.score);li.className=w;li.innerHTML=`<span class="srcname">${CATS[k].src}</span> shows ${EVID[k][w]}.`;}
+    evl.appendChild(li);});
+  document.getElementById('verbBlock').innerHTML=conn.creative&&synth('creative',ADS[ad]).avail?renderVerb():'';
+  // STAGE 2 — Executive Briefing: the council weighs in, then ORION synthesizes
   council.innerHTML=councilPerspectives(ev).map(m=>
     `<div class="cmember"><span class="cmDot" style="background:${dotFor(m.stance)}"></span>
        <div class="cmBody"><span class="cmName">${m.name}</span><span class="cmSrc">${m.src}</span>
        <div class="cmText">${m.text}</div></div></div>`).join('');
-  // verbatims
-  document.getElementById('verbBlock').innerHTML=conn.creative&&synth('creative',ADS[ad]).avail?renderVerb():'';
-  // STAGE 2 interpretation
   const v=conn.creative&&synth('creative',ADS[ad]).avail?qualVerdict(ad):null;
   document.getElementById('agreeBlock').innerHTML = v
     ? `<div class="agreeRow"><span class="agreeTag ${v.cls}">${v.tag}</span>${v.text}</div>`
     : `<div class="agreeRow"><span class="agreeTag ag-partial">—</span>Connect ${CATS.creative.src} to weigh the quantitative creative read against consumer verbatims.</div>`;
   document.getElementById('blNote').innerHTML = ev.bl
-    ? `Reading the chain together, it breaks down at <b>${CATS[ev.bl].name}</b> — that's the stage holding everything else back.`
-    : 'The chain reads consistently — no single stage stands out as the constraint.';
+    ? `Pulling the council together, the chain breaks down at <b>${CATS[ev.bl].name}</b> — that's the stage holding everything else back.`
+    : 'Pulling the council together, the chain reads consistently — no single stage stands out.';
   document.getElementById('knNote').innerHTML = `<b>From shared marketing knowledge:</b> ${knowledgeFor(ev)}`;
-  // STAGE 3 recommendation — cite the verbatim that evidences the call
+  // STAGE 3 — Recommendation
   const sv=supportingVerbatim(ad,ev);
   let na=ev.action+(sv?`<span class="raquote">Consumers said it themselves: “${sv.q}”</span>`:'');
   if(ev.aiKeys&&ev.aiKeys.length) na+=`<span style="display:block;margin-top:7px;font-size:11.5px;color:var(--test)">⚠ Includes AI-estimated evidence for ${ev.aiKeys.map(k=>CATS[k].name.replace(' Evidence','')).join(', ')} — provisional; treat as a hypothesis until measured.</span>`;
   document.getElementById('nextAction').innerHTML=na;
-  document.getElementById('confFill').style.width=ev.conf+'%';
-  document.getElementById('confFill').style.background=ev.conf>=65?COLORS.good:ev.conf>=45?COLORS.warn:COLORS.bad;
-  document.getElementById('confTxt').textContent=ev.conf+'% '+(ev.conf>=65?'· solid':ev.conf>=45?'· moderate':'· thin');
+  setMeter('str',ev.strength);setMeter('rdy',ev.readiness);
 }
 function renderVerb(){
   const sy=synth('creative',ADS[ad]);
@@ -803,8 +838,8 @@ function askConsultant(qRaw){
     if(!ev.bl)return `Nothing connected yet for ${ADS[ad].short}.`;
     return `On <b>${ADS[ad].short}</b>, the chain breaks at <b>${CATS[ev.bl].name}</b> — that's where I'd focus first. ${ev.action}`;
   }
-  if(/(confiden|how sure|trust|reliable|quality|thin|certain)/.test(q))
-    return `Evidence quality on <b>${ADS[ad].short}</b> is <b>${ev.conf}%</b> (${ev.conf>=65?'solid':ev.conf>=45?'moderate':'thin'}).`+(keys.length<3?` Note: ${CHAIN.filter(k=>!keys.includes(k)).map(k=>CATS[k].name).join(', ')} ${keys.length<2?'are':'is'} not in evidence here.`:'');
+  if(/(confiden|how sure|trust|reliable|quality|thin|certain|strength|readiness|ready)/.test(q))
+    return `Two different questions, two answers on <b>${ADS[ad].short}</b>:<ul class="botul"><li><b>Evidence Strength ${ev.strength}%</b> ${meterWord(ev.strength,'str')} — how consistently the disciplines point the same way.</li><li><b>Decision Readiness ${ev.readiness}%</b> ${meterWord(ev.readiness,'rdy')} — whether there's enough trustworthy coverage to act.</li></ul>`+(keys.length<3?`${CHAIN.filter(k=>!keys.includes(k)).map(k=>CATS[k].name).join(', ')} ${keys.length<2?'are':'is'} not yet in evidence.`:'');
   if(/(why|explain|reason|justif|rationale|recommend|what should|do next|tell me|this (ad|campaign))/.test(q)){
     if(!keys.length)return `Connect some evidence for ${ADS[ad].short} and I'll explain the read.`;
     return whyAnswer(ev,ad);

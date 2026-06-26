@@ -55,6 +55,14 @@
   ul.ev li::before{content:"";position:absolute;left:0;top:13px;width:7px;height:7px;border-radius:50%}
   ul.ev li.pos::before{background:var(--good)} ul.ev li.neg::before{background:var(--bad)} ul.ev li.mix::before{background:var(--warn)} ul.ev li.neu::before{background:var(--dim)}
   ul.ev .srcname{color:var(--txt);font-weight:650}
+  /* executive council */
+  .council{display:flex;flex-direction:column}
+  .cmember{display:grid;grid-template-columns:auto 1fr;gap:11px;padding:9px 0;border-top:1px solid var(--line);align-items:start}
+  .cmember:first-child{border-top:none}
+  .cmDot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0}
+  .cmName{font-weight:650;font-size:12.5px}
+  .cmSrc{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.3px;margin-left:8px}
+  .cmText{font-size:13px;color:var(--txt);line-height:1.45;margin-top:2px}
   .verb{margin-top:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
   .verb:empty{display:none}
   .verbHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:9px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -188,7 +196,7 @@
   <header>
     <span class="tag">Working Prototype · Marketing Evidence Orchestrator</span>
     <h1>Creative Intelligence System</h1>
-    <p style="font-size:13px;color:var(--muted);margin:-2px 0 10px">The Marketing Evidence Orchestrator — powered by <b style="color:var(--accent)">ORION</b>, the reasoning engine.</p>
+    <p style="font-size:13px;color:var(--muted);margin:-2px 0 10px">The Marketing Evidence Orchestrator — powered by <b style="color:var(--accent)">ORION</b>, an executive council of domain intelligences that each weigh in before a decision is delivered.</p>
     <p style="font-size:15px;color:var(--txt);max-width:840px;font-weight:600;margin-bottom:8px">Marketing doesn’t suffer from a lack of data. It suffers from a lack of explanation.</p>
     <p>CIS answers the three questions every marketer keeps asking — <b>What happened? Why did it happen? What
        should we do next?</b> — by synthesizing the creative-effectiveness evidence you already collect but rarely
@@ -209,7 +217,7 @@
     <div class="archOp">+</div>
     <div class="archBox"><div class="archT">Shared Marketing Knowledge</div><div class="archS">public marketing science · published research · vendor category norms — no client data</div></div>
     <div class="archOp">→</div>
-    <div class="archBox orion"><div class="archT">ORION reasons</div><div class="archS">what happened · why · what to do next</div></div>
+    <div class="archBox orion"><div class="archT">ORION — the council reasons</div><div class="archS">six domain intelligences weigh in · ORION synthesizes · CIS delivers the decision</div></div>
   </div>
 
   <div class="selects">
@@ -228,8 +236,8 @@
     <div class="recHead"><span class="recBadge" id="recBadge">—</span><div class="heroHeadline" id="recHeadline">Connect evidence to begin.</div></div>
     <div class="flow">What happened? → Why did it happen? → What should we do next?</div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">1</span> Evidence — what happened?</div>
-      <ul class="ev" id="evList"><li class="neu">No evidence connected yet.</li></ul>
+      <div class="stageHd"><span class="stageNo">1</span> Evidence — the council weighs in</div>
+      <div class="council" id="council"></div>
       <div class="verb" id="verbBlock"></div>
     </div>
     <div class="stage">
@@ -305,7 +313,7 @@
 <!-- CONSULTANT BOT -->
 <div id="botFab" class="botFab">💬 Ask ORION</div>
 <div id="botPanel" class="botPanel">
-  <div class="botHead"><div><b>ORION</b><div class="botSub">the reasoning engine · your evidence + marketing science, never guesswork</div></div><span id="botClose" class="botClose">✕</span></div>
+  <div class="botHead"><div><b>ORION</b><div class="botSub">an executive council of domain intelligences · your evidence + marketing science</div></div><span id="botClose" class="botClose">✕</span></div>
   <div id="botMsgs" class="botMsgs"></div>
   <div id="botChips" class="botChips"></div>
   <div class="botInputRow"><input id="botInput" class="botInput" placeholder="Ask why, a what-if, or for a summary…" autocomplete="off"><button id="botSend" class="botSend">Send</button></div>
@@ -555,6 +563,52 @@ function knowledgeFor(ev){
   return KNOWLEDGE.default;
 }
 
+// ---------- ORION as an executive council of domain intelligences ----------
+const dotFor=st=>st==='pos'?COLORS.good:st==='mix'?COLORS.warn:st==='neg'?COLORS.bad:st==='neu'?COLORS.accent:COLORS.dim;
+function councilPerspectives(ev){
+  const reads=ev.reads, a=ADS[ad], list=[];
+  const cre=reads.creative, measuredCre=cre&&cre.avail&&cre.provenance!=='ai';
+  // Creative Intelligence
+  if(cre&&cre.avail){const st=evWord(cre.score), emo=a.creative&&a.creative.emotions?a.creative.emotions[0]:null, prov=cre.provenance==='ai';
+    list.push({name:'Creative Intelligence',src:'Ace Metrix',stance:st,text:
+      prov?`AI estimate: the creative looks ${st==='pos'?'strong':st==='mix'?'mixed':'weak'} (provisional).`:
+      st==='pos'?`The creative is working — ${emo?emo[0].toLowerCase()+' indexes high and ':''}likeability is strong.`:
+      st==='mix'?`A mixed creative response — it tests around category norm.`:
+      `The creative isn’t landing — it tests below norm on the core attributes.`});
+  } else list.push({name:'Creative Intelligence',src:'Ace Metrix',stance:'na',text:'No creative-testing evidence connected.'});
+  // Media Intelligence (attention)
+  if(measuredCre&&a.creative.Attention!=null){const st=evWord(a.creative.Attention);
+    list.push({name:'Media Intelligence',src:'iSpot · attention',stance:st,text:
+      st==='pos'?`The ad is earning attention — it’s being seen and held.`:
+      st==='mix'?`Attention sits around norm — seen, but not breaking through.`:
+      `Attention is a weak point — the ad is struggling to get noticed.`});
+  } else list.push({name:'Media Intelligence',src:'iSpot · attention',stance:'na',text:'No attention/media evidence available.'});
+  // Consumer Intelligence (verbatims)
+  if(measuredCre&&a.creative.verb){const sent=a.creative.sentiment, st=sent==='pos'?'pos':sent==='neg'?'neg':'mix', t0=a.creative.verb[0];
+    list.push({name:'Consumer Intelligence',src:'Verbatims',stance:st,text:
+      `In consumers’ own words it ${sent==='pos'?'resonates':sent==='neg'?'misfires':'splits opinion'} — “${t0.t.toLowerCase()}.” <span style="color:var(--dim)">“${t0.q}”</span>`});
+  } else list.push({name:'Consumer Intelligence',src:'Verbatims',stance:'na',text:'No consumer verbatims connected.'});
+  // Brand Intelligence
+  if(reads.brand&&reads.brand.avail){const st=evWord(reads.brand.score),prov=reads.brand.provenance==='ai';
+    list.push({name:'Brand Intelligence',src:'iSpot',stance:st,text:
+      prov?`AI estimate: brand impact looks ${st==='pos'?'solid':st==='mix'?'middling':'weak'} (provisional).`:
+      st==='pos'?`The brand is sticking — recall and intent are strong.`:
+      st==='mix'?`Middling brand impact — recall and intent sit near norm.`:
+      `The brand isn’t sticking — recall and linkage are below norm.`});
+  } else list.push({name:'Brand Intelligence',src:'iSpot',stance:'na',text:'No brand-impact evidence connected.'});
+  // Business Intelligence
+  if(reads.business&&reads.business.avail){const st=evWord(reads.business.score),prov=reads.business.provenance==='ai';
+    list.push({name:'Business Intelligence',src:'Outcomes',stance:st,text:
+      prov?`AI estimate: outcomes likely ${st==='pos'?'follow through':st==='mix'?'are middling':'fall short'} (provisional).`:
+      st==='pos'?`Outcomes are following through — effectiveness shows up in the results.`:
+      st==='mix'?`Middling business outcomes.`:
+      `Weak business outcomes — the work isn’t converting to results.`});
+  } else list.push({name:'Business Intelligence',src:'Outcomes',stance:'na',text:'No measured outcomes for this campaign yet.'});
+  // Context Intelligence (shared knowledge layer)
+  list.push({name:'Context Intelligence',src:'Marketing knowledge',stance:'neu',text:knowledgeFor(ev)});
+  return list;
+}
+
 // ---------- compute / render ----------
 // explicit evidence-state framework: Available / Weak / Unavailable (about the evidence, not the verdict)
 function evidenceState(k){
@@ -587,11 +641,11 @@ function compute(){
   cisEl.textContent=ev.cis;cisEl.style.color=scoreColor(ev.cis);
 }
 function renderAdvisor(ev){
-  const badge=document.getElementById('recBadge'), evl=document.getElementById('evList');
+  const badge=document.getElementById('recBadge');
   if(!ev){badge.textContent='—';badge.style.background=COLORS.dim;badge.style.color='#fff';
     document.getElementById('recCard').style.borderColor='var(--line)';
     document.getElementById('recHeadline').textContent='Connect evidence to begin.';
-    evl.innerHTML='<li class="neu">No evidence connected yet.</li>';
+    document.getElementById('council').innerHTML='<div class="cmText" style="color:var(--dim)">No evidence connected yet — connect a source, or let ORION reason from the shared knowledge layer.</div>';
     document.getElementById('verbBlock').innerHTML='';document.getElementById('agreeBlock').innerHTML='';
     document.getElementById('blNote').textContent='—';document.getElementById('knNote').innerHTML='';document.getElementById('nextAction').textContent='—';
     document.getElementById('confFill').style.width='0';document.getElementById('confTxt').textContent='—';return;}
@@ -599,17 +653,12 @@ function renderAdvisor(ev){
   badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
   document.getElementById('recCard').style.borderColor=A.color;
   document.getElementById('recHeadline').textContent=ev.headline;
-  // STAGE 1 evidence (what happened) — measured + AI-derived, with provenance
-  evl.innerHTML='';
-  CHAIN.forEach(k=>{
-    const r=ev.reads[k], li=document.createElement('li');
-    if(!r.avail){li.className='neu';
-      li.innerHTML=r.connected?`<span class="srcname">${CATS[k].src}</span> — <b>Evidence Unavailable</b> (no measured data for this ad).`:`<span class="srcname">${CATS[k].src}</span> — not connected.`;}
-    else if(r.provenance==='ai'){li.className='ai';
-      li.innerHTML=`<span class="srcname">CIS AI</span> estimates ${EVID[k][evWord(r.score)]}<span class="aitag">AI-derived</span>`;}
-    else{const w=evWord(r.score);li.className=w;li.innerHTML=`<span class="srcname">${CATS[k].src}</span> shows ${EVID[k][w]}.`;}
-    evl.appendChild(li);
-  });
+  // STAGE 1 evidence — the executive council: each discipline contributes its perspective
+  const council=document.getElementById('council');
+  council.innerHTML=councilPerspectives(ev).map(m=>
+    `<div class="cmember"><span class="cmDot" style="background:${dotFor(m.stance)}"></span>
+       <div class="cmBody"><span class="cmName">${m.name}</span><span class="cmSrc">${m.src}</span>
+       <div class="cmText">${m.text}</div></div></div>`).join('');
   // verbatims
   document.getElementById('verbBlock').innerHTML=conn.creative&&synth('creative',ADS[ad]).avail?renderVerb():'';
   // STAGE 2 interpretation

@@ -71,6 +71,19 @@
   .meterRow{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
   .meterRow span:last-child{font-variant-numeric:tabular-nums;color:var(--txt);font-weight:600}
   .meterSub{font-size:10.5px;color:var(--dim);margin-top:4px}
+  /* ORION's Judgment artifact */
+  .judgment{background:rgba(110,168,254,.06);border:1px solid rgba(110,168,254,.28);border-radius:12px;padding:14px 15px}
+  .enduring,.situational{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:9px;padding:1px 8px;margin-left:8px}
+  .enduring{color:var(--accent);border:1px solid rgba(110,168,254,.45)}
+  .situational{color:var(--muted);border:1px solid var(--line)}
+  .jRead{font-size:14px;line-height:1.5;margin:8px 0 0;color:var(--txt)}
+  .jCrux{font-size:13.5px;line-height:1.5;margin:8px 0 0;color:var(--txt)}
+  .jCrux b{color:var(--accent)}
+  .jGaps{font-size:12.5px;color:var(--muted);margin:4px 0 0;line-height:1.45}
+  .jGaps::before{content:"What I’m less sure about: ";color:var(--dim);font-weight:600}
+  .jMemory{font-size:11px;color:var(--dim);font-style:italic;margin:12px 0 0;border-top:1px solid rgba(110,168,254,.2);padding-top:9px}
+  .objNote{font-size:11.5px;color:var(--dim);margin:8px 0 0}
+  .advFoot.oneCol{grid-template-columns:1fr}
   .verb{margin-top:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
   .verb:empty{display:none}
   .verbHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:9px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -242,31 +255,37 @@
   <!-- ADVISOR -->
   <div class="card" id="recCard">
     <div class="recHead"><span class="recBadge" id="recBadge">—</span><div class="heroHeadline" id="recHeadline">Connect evidence to begin.</div></div>
-    <div class="flow">What happened? → Why did it happen? → What should we do next?</div>
+    <div class="flow">Evidence → Judgment → Recommendation → Decision</div>
     <div class="stage">
       <div class="stageHd"><span class="stageNo">1</span> Evidence — what happened?</div>
       <ul class="ev" id="evList"><li class="neu">No evidence connected yet.</li></ul>
       <div class="verb" id="verbBlock"></div>
     </div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">2</span> Executive Briefing — why did it happen?</div>
+      <div class="stageHd"><span class="stageNo">2</span> Executive Briefing — the council weighs in</div>
       <div class="council" id="council"></div>
-      <div class="orionSynth">
-        <div class="synthHd">◆ ORION&#39;s synthesis</div>
+    </div>
+    <div class="stage">
+      <div class="stageHd"><span class="stageNo">3</span> ORION&#39;s Judgment <span class="enduring">enduring artifact</span></div>
+      <div class="judgment">
         <div id="agreeBlock"></div>
-        <p class="blnote2" id="blNote">—</p>
+        <p class="jRead" id="jRead"></p>
+        <p class="jCrux" id="jCrux"></p>
+        <div class="meters" style="margin:13px 0 2px">
+          <div class="meter"><div class="meterRow"><span>Evidence Strength</span><span id="strTxt">—</span></div><div class="confbar"><div class="conffill" id="strFill" style="width:0"></div></div><div class="meterSub">how consistently the evidence supports this read</div></div>
+          <div class="meter"><div class="meterRow"><span>Decision Readiness</span><span id="rdyTxt">—</span></div><div class="confbar"><div class="conffill" id="rdyFill" style="width:0"></div></div><div class="meterSub">whether there's enough evidence to act</div></div>
+        </div>
+        <p class="jGaps" id="jGaps"></p>
         <p class="knote" id="knNote"></p>
+        <p class="jMemory">This judgment becomes institutional memory — recorded alongside what actually happens, it sharpens ORION&#39;s future judgment.</p>
       </div>
     </div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">3</span> Recommendation — what should we do next?</div>
+      <div class="stageHd"><span class="stageNo">4</span> Recommendation — what to do now <span class="situational">situational</span></div>
       <p class="nextAction" id="nextAction">—</p>
+      <p class="objNote">The judgment above endures; this recommendation is how it applies to the current objective.</p>
     </div>
-    <div class="advFoot">
-      <div class="meters">
-        <div class="meter"><div class="meterRow"><span>Evidence Strength</span><span id="strTxt">—</span></div><div class="confbar"><div class="conffill" id="strFill" style="width:0"></div></div><div class="meterSub">how consistently the evidence supports this call</div></div>
-        <div class="meter"><div class="meterRow"><span>Decision Readiness</span><span id="rdyTxt">—</span></div><div class="confbar"><div class="conffill" id="rdyFill" style="width:0"></div></div><div class="meterSub">whether there's enough evidence to act</div></div>
-      </div>
+    <div class="advFoot oneCol">
       <div class="missing"><h3>Evidence coverage</h3><div class="evcov" id="evCoverage"></div></div>
     </div>
   </div>
@@ -461,6 +480,51 @@ function evaluateCurrent(){
   return {reads,keys,conf,cis,sentiment,bl,aiKeys,strength,readiness,...d};
 }
 const meterWord=(v,kind)=>kind==='str'?(v>=70?'· strong':v>=45?'· moderate':'· limited'):(v>=70?'· ready':v>=45?'· partial':'· gather more');
+
+// ---------- ORION's Judgment — the enduring artifact (Evidence → Judgment → Recommendation → Decision) ----------
+const joinList=a=>a.length<=1?a.join(''):a.length===2?a.join(' and '):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+const CRUX={
+  brandgap:'fame vs. brand fluency — the work earns attention and affection, but isn’t cueing the brand.',
+  negative:'attention vs. affinity — it’s being seen, but at the brand’s expense.',
+  weakcreative:'the execution itself — nothing downstream can compensate for creative that isn’t landing.',
+  activation:'brand vs. activation — it builds the brand but isn’t converting to outcomes.',
+  scale:'no major tension — creative, brand and outcomes are pulling the same way.',
+  polarizing:'reach vs. risk — it builds salience with a target while alienating others.',
+  default:'where the chain is strongest vs. where it breaks down.'
+};
+function cruxOf(ev){
+  if(ev.sentiment==='neg')return CRUX.negative;
+  if(ev.sentiment==='mixed')return CRUX.polarizing;
+  if(ev.rec==='OPTIMIZE'&&ev.bl==='brand')return CRUX.brandgap;
+  if(ev.rec==='OPTIMIZE'&&ev.bl==='business')return CRUX.activation;
+  if(ev.rec==='TEST')return CRUX.weakcreative;
+  if(ev.rec==='SCALE')return CRUX.scale;
+  return CRUX.default;
+}
+function judgmentRead(ev){
+  const strong=[],weak=[],gap=[];
+  CHAIN.forEach(k=>{const r=ev.reads[k], label=CATS[k].name.replace(' Evidence','');
+    if(!r.avail){gap.push(label);return;}
+    const w=evWord(r.score); if(w==='pos')strong.push(label); else if(w==='neg')weak.push(label);});
+  let s='ORION reads this as ';
+  if(strong.length&&weak.length) s+=`<b>strong on ${joinList(strong)}, but weak on ${joinList(weak)}</b>`;
+  else if(strong.length) s+=`<b>broadly strong</b> — ${joinList(strong)} all hold up`;
+  else if(weak.length) s+=`<b>weak across ${joinList(weak)}</b>`;
+  else s+='a <b>mixed</b> picture across the chain';
+  s+='.';
+  if(gap.length) s+=` ${joinList(gap)} ${gap.length>1?'are':'is'} not yet measured.`;
+  if(ev.sentiment==='neg') s+=' Consumers are reacting against it — attention without affinity.';
+  else if(ev.sentiment==='mixed') s+=' Consumer response is sharply polarized.';
+  return s;
+}
+function judgmentGaps(ev){
+  const items=[];
+  CHAIN.forEach(k=>{const r=ev.reads[k], label=CATS[k].name.replace(' Evidence','');
+    if(!r.avail) items.push(`${label} is unmeasured`);
+    else if(r.provenance==='ai') items.push(`${label} is AI-estimated, not measured`);
+    else if(r.conf<55) items.push(`${label} evidence is thin`);});
+  return items.length?joinList(items)+'.':'Full, measured coverage — no major gaps.';
+}
 
 // ---------- qualitative verdict (quant creative vs verbatim sentiment) ----------
 function qualVerdict(id){
@@ -680,7 +744,8 @@ function renderAdvisor(ev){
     evl.innerHTML='<li class="neu">No evidence connected yet.</li>';
     council.innerHTML='<div class="cmText" style="color:var(--dim)">Connect a source, or let ORION reason from the shared knowledge layer.</div>';
     document.getElementById('verbBlock').innerHTML='';document.getElementById('agreeBlock').innerHTML='';
-    document.getElementById('blNote').textContent='—';document.getElementById('knNote').innerHTML='';document.getElementById('nextAction').textContent='—';
+    document.getElementById('jRead').innerHTML='';document.getElementById('jCrux').innerHTML='';document.getElementById('jGaps').innerHTML='';
+    document.getElementById('knNote').innerHTML='';document.getElementById('nextAction').textContent='—';
     setMeter('str',0);setMeter('rdy',0);return;}
   const A=ACTION[ev.rec];
   badge.textContent=A.label;badge.style.background=A.color;badge.style.color='#0c0e14';
@@ -694,20 +759,21 @@ function renderAdvisor(ev){
     else{const w=evWord(r.score);li.className=w;li.innerHTML=`<span class="srcname">${CATS[k].src}</span> shows ${EVID[k][w]}.`;}
     evl.appendChild(li);});
   document.getElementById('verbBlock').innerHTML=conn.creative&&synth('creative',ADS[ad]).avail?renderVerb():'';
-  // STAGE 2 — Executive Briefing: the council weighs in, then ORION synthesizes
+  // STAGE 2 — Executive Briefing: the six disciplines weigh in
   council.innerHTML=councilPerspectives(ev).map(m=>
     `<div class="cmember"><span class="cmDot" style="background:${dotFor(m.stance)}"></span>
        <div class="cmBody"><span class="cmName">${m.name}</span><span class="cmSrc">${m.src}</span>
        <div class="cmText">${m.text}</div></div></div>`).join('');
+  // STAGE 3 — ORION's Judgment (the enduring artifact)
   const v=conn.creative&&synth('creative',ADS[ad]).avail?qualVerdict(ad):null;
   document.getElementById('agreeBlock').innerHTML = v
     ? `<div class="agreeRow"><span class="agreeTag ${v.cls}">${v.tag}</span>${v.text}</div>`
     : `<div class="agreeRow"><span class="agreeTag ag-partial">—</span>Connect ${CATS.creative.src} to weigh the quantitative creative read against consumer verbatims.</div>`;
-  document.getElementById('blNote').innerHTML = ev.bl
-    ? `Pulling the council together, the chain breaks down at <b>${CATS[ev.bl].name}</b> — that's the stage holding everything else back.`
-    : 'Pulling the council together, the chain reads consistently — no single stage stands out.';
-  document.getElementById('knNote').innerHTML = `<b>From shared marketing knowledge:</b> ${knowledgeFor(ev)}`;
-  // STAGE 3 — Recommendation
+  document.getElementById('jRead').innerHTML = judgmentRead(ev);
+  document.getElementById('jCrux').innerHTML = `<b>The crux:</b> ${cruxOf(ev)}`+(ev.bl?` The chain breaks at <b>${CATS[ev.bl].name}</b>.`:'');
+  document.getElementById('jGaps').innerHTML = judgmentGaps(ev);
+  document.getElementById('knNote').innerHTML = `<b>Grounded in:</b> ${knowledgeFor(ev)}`;
+  // STAGE 4 — Recommendation (situational)
   const sv=supportingVerbatim(ad,ev);
   let na=ev.action+(sv?`<span class="raquote">Consumers said it themselves: “${sv.q}”</span>`:'');
   if(ev.aiKeys&&ev.aiKeys.length) na+=`<span style="display:block;margin-top:7px;font-size:11.5px;color:var(--test)">⚠ Includes AI-estimated evidence for ${ev.aiKeys.map(k=>CATS[k].name.replace(' Evidence','')).join(', ')} — provisional; treat as a hypothesis until measured.</span>`;

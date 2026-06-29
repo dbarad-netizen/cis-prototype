@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Creative Intelligence System — Evidence Synthesis</title>
+<title>MAVEN — Marketing Evidence Orchestrator</title>
 <style>
   :root{--bg:#0c0e14;--panel:#151823;--panel2:#1c2030;--line:#2a3042;--txt:#e8ebf2;--muted:#9aa3b8;--dim:#6b7488;
     --accent:#6ea8fe;--good:#38d39f;--warn:#f6c544;--bad:#f06a6a;--test:#b98cf0;}
@@ -216,21 +216,19 @@
 <div class="wrap">
   <header>
     <span class="tag">Working Prototype · Marketing Evidence Orchestrator</span>
-    <h1>Creative Intelligence System</h1>
-    <p style="font-size:13px;color:var(--muted);margin:-2px 0 10px">The Marketing Evidence Orchestrator — powered by <b style="color:var(--accent)">ORION</b>, an executive council of domain intelligences that each weigh in before a decision is delivered.</p>
-    <p style="font-size:15px;color:var(--txt);max-width:840px;font-weight:600;margin-bottom:8px">Marketing doesn’t suffer from a lack of data. It suffers from a lack of explanation.</p>
-    <p>CIS answers the three questions every marketer keeps asking — <b>What happened? Why did it happen? What
-       should we do next?</b> — by synthesizing the creative-effectiveness evidence you already collect but rarely
-       connect: emotional measures, creative attributes, attention, consumer verbatims, brand response, and — the
-       bridge to marketplace performance — <b>effectiveness &amp; business outcomes</b>. It organizes everything as
-       a chain — <b>Creative → Brand → Business</b> — and finds where it breaks down. <b>ORION</b> reasons over your
-       evidence and a shared marketing-knowledge layer to explain what happened, why, and what to do next — and
-       <b>your evidence stays isolated; it never trains a shared model.</b></p>
+    <h1 style="font-size:30px;letter-spacing:1px">MAVEN</h1>
+    <p style="font-size:18px;color:var(--txt);max-width:840px;font-weight:650;margin:4px 0 4px;letter-spacing:-.2px">Given everything we know… what should we do next?</p>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 12px">That’s the question marketers ask every day. <b>MAVEN</b> is the system that answers it — a <b>Marketing Evidence Orchestrator</b> that turns evidence into better marketing decisions, powered by <b style="color:var(--accent)">ORION</b>, the judgment engine.</p>
+    <p>Marketing doesn’t suffer from a lack of data — it suffers from a lack of explanation. MAVEN reads the
+       creative-effectiveness evidence you already collect but rarely connect — emotional measures, creative
+       attributes, attention, consumer verbatims, brand response, and effectiveness &amp; business outcomes — and runs
+       it through one spine: <b>Evidence → Judgment → Recommendation → Decision</b>. Your evidence stays isolated;
+       it never trains a shared model.</p>
     <p style="font-size:12px;color:var(--dim);max-width:840px">The campaigns are <b>real, recognizable ads</b>;
        the measures mirror the <b>Ace Metrix / iSpot</b> model (Likeability, emotional metrics, attributes vs.
        category norm, brand recall, intent, outcomes). Signal values are <b>illustrative reconstructions</b> of each
        ad's public reputation — not actual vendor scores. Gaps show honestly as "Evidence Unavailable" — and where no
-       measured evidence exists, CIS can offer an <b>AI-derived estimate</b> from the ad content, clearly labeled and provisional.</p>
+       measured evidence exists, MAVEN can offer an <b>AI-derived estimate</b> from the ad content, clearly labeled and provisional.</p>
   </header>
 
   <div class="arch">
@@ -238,7 +236,7 @@
     <div class="archOp">+</div>
     <div class="archBox"><div class="archT">Shared Marketing Knowledge</div><div class="archS">public marketing science · published research · vendor category norms — no client data</div></div>
     <div class="archOp">→</div>
-    <div class="archBox orion"><div class="archT">ORION — the council reasons</div><div class="archS">six domain intelligences weigh in · ORION synthesizes · CIS delivers the decision</div></div>
+    <div class="archBox orion"><div class="archT">ORION — the council reasons</div><div class="archS">six domain intelligences weigh in · ORION synthesizes · MAVEN delivers the decision</div></div>
   </div>
 
   <div class="selects">
@@ -337,10 +335,10 @@
   </details>
 
   <footer>
-    A research prototype of the Marketing Evidence Orchestrator. Evidence sources are simulated and signal values are
-    illustrative reconstructions of public ad reputation — directional, not actual vendor data. Architecture: your
-    private evidence stays isolated; ORION reasons over it using a shared marketing-knowledge layer built only from
-    public science and vendor norms — your data never trains a shared model. Measures sit one tap away under each category.
+    MAVEN — a research prototype of the Marketing Evidence Orchestrator. Evidence sources are simulated and signal
+    values are illustrative reconstructions of public ad reputation — directional, not actual vendor data. Architecture:
+    your private evidence stays isolated; ORION (the judgment engine) reasons over it using a shared marketing-knowledge
+    layer built only from public science and vendor norms — your data never trains a shared model.
   </footer>
 </div>
 
@@ -755,7 +753,7 @@ function renderAdvisor(ev){
   evl.innerHTML='';
   CHAIN.forEach(k=>{const r=ev.reads[k], li=document.createElement('li');
     if(!r.avail){li.className='neu';li.innerHTML=r.connected?`<span class="srcname">${CATS[k].src}</span> — <b>Evidence Unavailable</b> (no measured data for this ad).`:`<span class="srcname">${CATS[k].src}</span> — not connected.`;}
-    else if(r.provenance==='ai'){li.className='ai';li.innerHTML=`<span class="srcname">CIS AI</span> estimates ${EVID[k][evWord(r.score)]}<span class="aitag">AI-derived</span>`;}
+    else if(r.provenance==='ai'){li.className='ai';li.innerHTML=`<span class="srcname">MAVEN AI</span> estimates ${EVID[k][evWord(r.score)]}<span class="aitag">AI-derived</span>`;}
     else{const w=evWord(r.score);li.className=w;li.innerHTML=`<span class="srcname">${CATS[k].src}</span> shows ${EVID[k][w]}.`;}
     evl.appendChild(li);});
   document.getElementById('verbBlock').innerHTML=conn.creative&&synth('creative',ADS[ad]).avail?renderVerb():'';
@@ -797,7 +795,7 @@ function chipState(k){
 function renderChips(){
   const wrap=document.getElementById('chips');wrap.innerHTML='';
   CHAIN.forEach(k=>{const c=CATS[k],q=chipState(k);
-    const src=q.prov==='ai'?'CIS AI · provisional':c.src;
+    const src=q.prov==='ai'?'MAVEN AI · provisional':c.src;
     const reveal=q.prov==='measured'?'tap for the measures →':q.prov==='ai'?'AI estimate — connect a source to confirm':'tap to connect →';
     const chip=document.createElement('div');chip.className='chip';
     chip.innerHTML=`<div class="chipDom">${c.name}</div><div class="chipSrc">${src}</div>
@@ -855,7 +853,7 @@ function whyAnswer(ev,id){
   const confWord=ev.conf>=65?'solid':ev.conf>=45?'moderate':'thin';
   let out=`I'd say <b>${ACTION[ev.rec].label}</b> on <b>${ADS[id].short}</b> — and I'm ${confWord}ly confident (${ev.conf}%). ${ev.headline}<br><br>From <b>your private evidence</b>:<ul class="botul">`;
   CHAIN.forEach(k=>{const r=ev.reads[k];if(!r||!r.avail){out+=`<li>${CATS[k].name}: not in evidence here</li>`;return;}
-    if(r.provenance==='ai')out+=`<li><b>CIS AI</b> — ${CATS[k].name.replace(' Evidence','')}: estimates ${EVID[k][evWord(r.score)]} <i>(AI-derived, provisional)</i></li>`;
+    if(r.provenance==='ai')out+=`<li><b>MAVEN AI</b> — ${CATS[k].name.replace(' Evidence','')}: estimates ${EVID[k][evWord(r.score)]} <i>(AI-derived, provisional)</i></li>`;
     else out+=`<li>${CATS[k].src} — ${CATS[k].name.replace(' Evidence','')}: ${EVID[k][evWord(r.score)]}</li>`;});
   out+='</ul>';
   const v=qualVerdict(id);
@@ -910,7 +908,7 @@ function askConsultant(qRaw){
     if(!keys.length)return `Connect some evidence for ${ADS[ad].short} and I'll explain the read.`;
     return whyAnswer(ev,ad);
   }
-  return `I can only answer from the evidence CIS has synthesized for these ads — I don't have evidence on that. Try “why this recommendation?”, “what do consumers say?”, a what-if (“what if brand linkage improves?”), or “summarize the portfolio.”`;
+  return `I can only answer from the evidence MAVEN has synthesized for these ads — I don't have evidence on that. Try “why this recommendation?”, “what do consumers say?”, a what-if (“what if brand linkage improves?”), or “summarize the portfolio.”`;
 }
 (function(){
   const panel=document.getElementById('botPanel'),msgs=document.getElementById('botMsgs'),fab=document.getElementById('botFab'),input=document.getElementById('botInput');
@@ -918,7 +916,7 @@ function askConsultant(qRaw){
   function add(html,who){const m=document.createElement('div');m.className='bmsg '+who;m.innerHTML=html;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight;}
   function send(text){const t=(text!==undefined?text:input.value).trim();if(!t)return;add(esc(t),'user');input.value='';setTimeout(()=>add(askConsultant(t),'bot'),200);}
   fab.addEventListener('click',()=>{panel.classList.add('open');fab.style.display='none';
-    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm <b>ORION</b>, the reasoning engine behind CIS, currently looking at <b>${ADS[ad].short}</b>. I reason over your private evidence and a shared marketing-knowledge layer — only from evidence. Ask me why, a what-if, or for a portfolio summary.`,'bot');}input.focus();});
+    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm <b>ORION</b>, the judgment engine behind <b>MAVEN</b>, currently looking at <b>${ADS[ad].short}</b>. I reason over your private evidence and a shared marketing-knowledge layer — only from evidence. Ask me why, a what-if, or for a portfolio summary.`,'bot');}input.focus();});
   document.getElementById('botClose').addEventListener('click',()=>{panel.classList.remove('open');fab.style.display='block';});
   document.getElementById('botSend').addEventListener('click',()=>send());
   input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});

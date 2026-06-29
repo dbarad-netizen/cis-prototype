@@ -215,10 +215,10 @@
 <body>
 <div class="wrap">
   <header>
-    <span class="tag">Working Prototype · Marketing Evidence Orchestrator</span>
+    <span class="tag">Working Prototype</span>
     <h1 style="font-size:30px;letter-spacing:1px">MAVEN</h1>
     <p style="font-size:18px;color:var(--txt);max-width:840px;font-weight:650;margin:4px 0 4px;letter-spacing:-.2px">Given everything we know… what should we do next?</p>
-    <p style="font-size:13px;color:var(--muted);margin:0 0 12px">That’s the question marketers ask every day. <b>MAVEN</b> is the system that answers it — a <b>Marketing Evidence Orchestrator</b> that turns evidence into better marketing decisions, powered by <b style="color:var(--accent)">ORION</b>, the judgment engine.</p>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 12px">That’s the question marketers ask every day. <b>MAVEN</b> is the system that answers it — turning evidence into better marketing decisions. Powered by <b style="color:var(--accent)">ORION</b>, the judgment engine.</p>
     <p>Marketing doesn’t suffer from a lack of data — it suffers from a lack of explanation. MAVEN reads the
        creative-effectiveness evidence you already collect but rarely connect — emotional measures, creative
        attributes, attention, consumer verbatims, brand response, and effectiveness &amp; business outcomes — and runs
@@ -343,9 +343,9 @@
 </div>
 
 <!-- CONSULTANT BOT -->
-<div id="botFab" class="botFab">💬 Ask ORION</div>
+<div id="botFab" class="botFab">💬 Ask MAVEN</div>
 <div id="botPanel" class="botPanel">
-  <div class="botHead"><div><b>ORION</b><div class="botSub">an executive council of domain intelligences · your evidence + marketing science</div></div><span id="botClose" class="botClose">✕</span></div>
+  <div class="botHead"><div><b>MAVEN</b><div class="botSub">your evidence advisor · reasoning by ORION, the judgment engine</div></div><span id="botClose" class="botClose">✕</span></div>
   <div id="botMsgs" class="botMsgs"></div>
   <div id="botChips" class="botChips"></div>
   <div class="botInputRow"><input id="botInput" class="botInput" placeholder="Ask why, a what-if, or for a summary…" autocomplete="off"><button id="botSend" class="botSend">Send</button></div>
@@ -869,7 +869,7 @@ function whyAnswer(ev,id){
 function askConsultant(qRaw){
   const q=qRaw.toLowerCase().trim(), ev=evaluateCurrent(), keys=ev.keys;
   if(q===''||/^(help|hi|hello|hey|what can you|who are you)/.test(q))
-    return `I'm <b>ORION</b>, the reasoning engine. I reason over <b>your private evidence</b> and a <b>shared marketing-knowledge layer</b> — only from evidence, never guesswork, and your data is never pooled. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What do consumers say?”</li><li>“What if the brand link improves?”</li><li>“Which ads should I stop?”</li><li>“Summarize the portfolio.”</li></ul>`;
+    return `I'm <b>MAVEN</b>. I turn your evidence into a recommendation — reasoning over <b>your private evidence</b> and a <b>shared marketing-knowledge layer</b> (ORION does the judgment underneath), only from evidence, never guesswork, and your data is never pooled. Try:<ul class="botul"><li>“Why this recommendation?”</li><li>“What do consumers say?”</li><li>“What if the brand link improves?”</li><li>“Which ads should I stop?”</li><li>“Summarize the portfolio.”</li></ul>`;
   if(/(portfolio|summar|overview|all (ad|campaign)|triage|everything)/.test(q)){
     const g={SCALE:[],OPTIMIZE:[],TEST:[],STOP:[]};Object.keys(ADS).forEach(id=>g[evaluate(id,availOf(id)).rec].push(ADS[id].short));
     let out=`Across all ${Object.keys(ADS).length} ads:<ul class="botul">`;
@@ -916,7 +916,7 @@ function askConsultant(qRaw){
   function add(html,who){const m=document.createElement('div');m.className='bmsg '+who;m.innerHTML=html;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight;}
   function send(text){const t=(text!==undefined?text:input.value).trim();if(!t)return;add(esc(t),'user');input.value='';setTimeout(()=>add(askConsultant(t),'bot'),200);}
   fab.addEventListener('click',()=>{panel.classList.add('open');fab.style.display='none';
-    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm <b>ORION</b>, the judgment engine behind <b>MAVEN</b>, currently looking at <b>${ADS[ad].short}</b>. I reason over your private evidence and a shared marketing-knowledge layer — only from evidence. Ask me why, a what-if, or for a portfolio summary.`,'bot');}input.focus();});
+    if(!msgs.dataset.init){msgs.dataset.init='1';add(`Hi — I'm <b>MAVEN</b>, currently looking at <b>${ADS[ad].short}</b>. I turn your evidence into a recommendation, reasoning over your private evidence and a shared marketing-knowledge layer — only from evidence. Ask me why, a what-if, or for a portfolio summary.`,'bot');}input.focus();});
   document.getElementById('botClose').addEventListener('click',()=>{panel.classList.remove('open');fab.style.display='block';});
   document.getElementById('botSend').addEventListener('click',()=>send());
   input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});

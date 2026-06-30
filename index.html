@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAVEN — Marketing Evidence Orchestrator</title>
+<title>MAVEN — Turning evidence into better marketing decisions</title>
 <style>
   :root{--bg:#0c0e14;--panel:#151823;--panel2:#1c2030;--line:#2a3042;--txt:#e8ebf2;--muted:#9aa3b8;--dim:#6b7488;
     --accent:#6ea8fe;--good:#38d39f;--warn:#f6c544;--bad:#f06a6a;--test:#b98cf0;}
@@ -81,6 +81,8 @@
   .jCrux b{color:var(--accent)}
   .jGaps{font-size:12.5px;color:var(--muted);margin:4px 0 0;line-height:1.45}
   .jGaps::before{content:"What I’m less sure about: ";color:var(--dim);font-weight:600}
+  .jInsight{font-size:13px;line-height:1.5;color:var(--txt);margin:12px 0 0;background:rgba(56,211,159,.08);border:1px solid rgba(56,211,159,.3);border-radius:9px;padding:10px 12px}
+  .jInsight b.lbl{color:var(--good);text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;display:block;margin-bottom:4px}
   .jMemory{font-size:11px;color:var(--dim);font-style:italic;margin:12px 0 0;border-top:1px solid rgba(110,168,254,.2);padding-top:9px}
   .objNote{font-size:11.5px;color:var(--dim);margin:8px 0 0}
   .advFoot.oneCol{grid-template-columns:1fr}
@@ -217,8 +219,8 @@
   <header>
     <span class="tag">Working Prototype</span>
     <h1 style="font-size:30px;letter-spacing:1px">MAVEN</h1>
-    <p style="font-size:18px;color:var(--txt);max-width:840px;font-weight:650;margin:4px 0 4px;letter-spacing:-.2px">Given everything we know… what should we do next?</p>
-    <p style="font-size:13px;color:var(--muted);margin:0 0 12px">That’s the question marketers ask every day. <b>MAVEN</b> is the system that answers it — turning evidence into better marketing decisions. Powered by <b style="color:var(--accent)">ORION</b>, the judgment engine.</p>
+    <p style="font-size:19px;color:var(--txt);max-width:840px;font-weight:650;margin:4px 0 6px;letter-spacing:-.2px">Turning evidence into better marketing decisions.</p>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 12px"><i>Given everything we know, what should we do next?</i> — the question marketers ask every day. <b>MAVEN</b> is the system that answers it, powered by <b style="color:var(--accent)">ORION</b>, the judgment engine.</p>
     <p>Marketing doesn’t suffer from a lack of data — it suffers from a lack of explanation. MAVEN reads the
        creative-effectiveness evidence you already collect but rarely connect — emotional measures, creative
        attributes, attention, consumer verbatims, brand response, and effectiveness &amp; business outcomes — and runs
@@ -274,6 +276,7 @@
         </div>
         <p class="jGaps" id="jGaps"></p>
         <p class="knote" id="knNote"></p>
+        <div class="jInsight" id="jInsight" style="display:none"></div>
         <p class="jMemory">This judgment becomes institutional memory — recorded alongside what actually happens, it sharpens ORION&#39;s future judgment.</p>
       </div>
     </div>
@@ -388,7 +391,9 @@ const ADS={
         {t:'Emotional, heartwarming storytelling resonated',p:'~26% of 470 open-ends',q:'That’s a great ad — it captures everything people would want, nostalgic and well done.'},
         {t:'Connected to Budweiser’s heritage & the Clydesdales',p:'~19% of open-ends',q:'Budweiser has been around a long time — a reliable beer company that always delivers.'},
         {t:'Product was secondary — and product-focused viewers rated it lower',p:'~19% of open-ends',q:'I didn’t get any information about the product, but I enjoyed the entertainment.'}]},
-    brand:{Recall:82,Intent:80,Favorability:76}, business:null, conf:{creative:90,brand:85}},
+    brand:{Recall:82,Intent:80,Favorability:76}, business:null, conf:{creative:90,brand:85},
+    realData:true,
+    insight:'Brand recall is strong (82) — the reflexive “beautiful ad, forgettable brand” critique is wrong here. The real soft spot is <b>Desire</b> (64th percentile) and converting non-drinkers (Never = 415). And the assumption-buster: the ~19% who viewed it through a <b>product</b> lens rated the ad <b>lower</b> (608 vs 719 for the brand/emotion audience) — so “show more product” would optimize the lowest-scoring lens and erode the highest. The lever is a desire cue at the emotional peak, not more product.'},
   on:{name:'On Running — “Elmo” campaign', short:'On Running', cat:'Athletic footwear', spend:45,
     creative:{Attention:72,Likeability:80,emotions:[['Heartwarming',76],['Fun',70]],Relevance:60,sentiment:'pos',
       verb:[{t:'Loved the character',p:'~43% of comments',q:'Elmo made me smile the whole time.'},{t:'Whose shoes?',p:'~25% of comments',q:'Cute… but I couldn’t tell you the brand.'}]},
@@ -745,6 +750,7 @@ function renderAdvisor(ev){
     council.innerHTML='<div class="cmText" style="color:var(--dim)">Connect a source, or let ORION reason from the shared knowledge layer.</div>';
     document.getElementById('verbBlock').innerHTML='';document.getElementById('agreeBlock').innerHTML='';
     document.getElementById('jRead').innerHTML='';document.getElementById('jCrux').innerHTML='';document.getElementById('jGaps').innerHTML='';
+    document.getElementById('jInsight').style.display='none';
     document.getElementById('knNote').innerHTML='';document.getElementById('nextAction').textContent='—';
     setMeter('str',0);setMeter('rdy',0);return;}
   const A=ACTION[ev.rec];
@@ -773,6 +779,9 @@ function renderAdvisor(ev){
   document.getElementById('jCrux').innerHTML = `<b>The crux:</b> ${cruxOf(ev)}`+(ev.bl?` The chain breaks at <b>${CATS[ev.bl].name}</b>.`:'');
   document.getElementById('jGaps').innerHTML = judgmentGaps(ev);
   document.getElementById('knNote').innerHTML = `<b>Grounded in:</b> ${knowledgeFor(ev)}`;
+  const ins=document.getElementById('jInsight'), insTxt=ADS[ad].insight;
+  if(insTxt){ins.style.display='block';ins.innerHTML=`<b class="lbl">Key insight · full Evidence Package (real Ace Metrix data)</b>${insTxt}`;}
+  else ins.style.display='none';
   // STAGE 4 — Recommendation (situational)
   const sv=supportingVerbatim(ad,ev);
   let na=ev.action+(sv?`<span class="raquote">Consumers said it themselves: “${sv.q}”</span>`:'');
@@ -906,9 +915,15 @@ function askConsultant(qRaw){
   }
   if(/(confiden|how sure|trust|reliable|quality|thin|certain|strength|readiness|ready)/.test(q))
     return `Two different questions, two answers on <b>${ADS[ad].short}</b>:<ul class="botul"><li><b>Evidence Strength ${ev.strength}%</b> ${meterWord(ev.strength,'str')} — how consistently the disciplines point the same way.</li><li><b>Decision Readiness ${ev.readiness}%</b> ${meterWord(ev.readiness,'rdy')} — whether there's enough trustworthy coverage to act.</li></ul>`+(keys.length<3?`${CHAIN.filter(k=>!keys.includes(k)).map(k=>CATS[k].name).join(', ')} ${keys.length<2?'are':'is'} not yet in evidence.`:'');
+  if(/(insight|surpris|assumption|non.?obvious|counter|myth|busted|interesting|didn.?t expect|hidden)/.test(q)){
+    if(ADS[ad].insight) return `The non-obvious read on <b>${ADS[ad].short}</b>:<br>${ADS[ad].insight}`;
+    return `No standout counter-intuitive insight on ${ADS[ad].short} beyond the recommendation itself — the evidence is fairly consistent.`;
+  }
   if(/(why|explain|reason|justif|rationale|recommend|what should|do next|tell me|this (ad|campaign))/.test(q)){
     if(!keys.length)return `Connect some evidence for ${ADS[ad].short} and I'll explain the read.`;
-    return whyAnswer(ev,ad);
+    let out=whyAnswer(ev,ad);
+    if(ADS[ad].insight) out+=`<br><br><b>And the insight worth surfacing:</b> ${ADS[ad].insight}`;
+    return out;
   }
   return `I can only answer from the evidence MAVEN has synthesized for these ads — I don't have evidence on that. Try “why this recommendation?”, “what do consumers say?”, a what-if (“what if brand linkage improves?”), or “summarize the portfolio.”`;
 }
@@ -923,7 +938,7 @@ function askConsultant(qRaw){
   document.getElementById('botSend').addEventListener('click',()=>send());
   input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
   const chips=document.getElementById('botChips');
-  [['Why this recommendation?','Why this recommendation?'],['What do consumers say?','What do consumers say about this ad?'],['What if brand link improves?','What if brand linkage improves?'],['Summarize the portfolio','Summarize the portfolio']]
+  [['Why this recommendation?','Why this recommendation?'],['What do consumers say?','What do consumers say about this ad?'],['What’s the surprising insight?','What is the surprising insight?'],['What if brand link improves?','What if brand linkage improves?'],['Summarize the portfolio','Summarize the portfolio']]
     .forEach(([lbl,qq])=>{const c=document.createElement('span');c.className='botChip';c.textContent=lbl;c.addEventListener('click',()=>send(qq));chips.appendChild(c);});
 })();
 

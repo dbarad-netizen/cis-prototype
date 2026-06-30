@@ -224,10 +224,9 @@
        attributes, attention, consumer verbatims, brand response, and effectiveness &amp; business outcomes — and runs
        it through one spine: <b>Evidence → Judgment → Recommendation → Decision</b>. Your evidence stays isolated;
        it never trains a shared model.</p>
-    <p style="font-size:12px;color:var(--dim);max-width:840px">The campaigns are <b>real, recognizable ads</b>;
-       the measures mirror the <b>Ace Metrix / iSpot</b> model (Likeability, emotional metrics, attributes vs.
-       category norm, brand recall, intent, outcomes). Signal values are <b>illustrative reconstructions</b> of each
-       ad's public reputation — not actual vendor scores. Gaps show honestly as "Evidence Unavailable" — and where no
+    <p style="font-size:12px;color:var(--dim);max-width:840px"><b style="color:var(--good)">Budweiser “First Delivery” now runs on real Ace Metrix data</b>
+       (n=512 creative-evaluation scores + 470 consumer verbatims). The other campaigns remain <b>illustrative
+       reconstructions</b> of each ad's public reputation. Gaps show honestly as "Evidence Unavailable" — and where no
        measured evidence exists, MAVEN can offer an <b>AI-derived estimate</b> from the ad content, clearly labeled and provisional.</p>
   </header>
 
@@ -383,10 +382,13 @@ const ADS={
     creative:{Attention:82,Likeability:64,emotions:[['Inspiring',88],['Divisive',55]],Relevance:70,sentiment:'mixed',
       verb:[{t:'Powerful & inspiring',p:'~38% of comments',q:'Gave me chills — exactly what Nike should stand for.'},{t:'Polarized backlash',p:'~29% of comments',q:'Done with Nike after this.'}]},
     brand:{Recall:86,Intent:68,Favorability:58}, business:{SalesLift:66,Conversion:62}, conf:{creative:84,brand:74,business:66}},
-  budweiser:{name:'Budweiser — “Puppy Love”', short:'Budweiser', cat:'Beer · Super Bowl', spend:60,
-    creative:{Attention:84,Likeability:90,emotions:[['Heartfelt',92],['Warm',78]],Relevance:55,sentiment:'pos',
-      verb:[{t:'Emotionally moving',p:'~46% of comments',q:'The puppy got me — I actually teared up.'},{t:'Brand barely registered',p:'~22% of comments',q:'Adorable… wait, what was it even advertising?'}]},
-    brand:{Recall:40,Intent:44,Favorability:58}, business:null, conf:{creative:88,brand:72}},
+  budweiser:{name:'Budweiser — “First Delivery” (:30)', short:'Budweiser', cat:'Beer · 2025 SB · REAL Ace Metrix data', spend:88,
+    creative:{Attention:97,Likeability:99,emotions:[['Nostalgic',85],['Heartfelt',78],['Funny',60]],Relevance:93,Desire:64,sentiment:'pos',
+      verb:[
+        {t:'Emotional, heartwarming storytelling resonated',p:'~26% of 470 open-ends',q:'That’s a great ad — it captures everything people would want, nostalgic and well done.'},
+        {t:'Connected to Budweiser’s heritage & the Clydesdales',p:'~19% of open-ends',q:'Budweiser has been around a long time — a reliable beer company that always delivers.'},
+        {t:'Product was secondary — and product-focused viewers rated it lower',p:'~19% of open-ends',q:'I didn’t get any information about the product, but I enjoyed the entertainment.'}]},
+    brand:{Recall:82,Intent:80,Favorability:76}, business:null, conf:{creative:90,brand:85}},
   on:{name:'On Running — “Elmo” campaign', short:'On Running', cat:'Athletic footwear', spend:45,
     creative:{Attention:72,Likeability:80,emotions:[['Heartwarming',76],['Fun',70]],Relevance:60,sentiment:'pos',
       verb:[{t:'Loved the character',p:'~43% of comments',q:'Elmo made me smile the whole time.'},{t:'Whose shoes?',p:'~25% of comments',q:'Cute… but I couldn’t tell you the brand.'}]},

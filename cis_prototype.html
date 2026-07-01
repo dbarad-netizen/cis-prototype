@@ -63,6 +63,14 @@
   .cmName{font-weight:650;font-size:12.5px}
   .cmSrc{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.3px;margin-left:8px}
   .cmText{font-size:13px;color:var(--txt);line-height:1.45;margin-top:2px}
+  .transp{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--good);border:1px solid rgba(56,211,159,.4);border-radius:9px;padding:1px 8px;margin-left:8px}
+  /* council debate */
+  .debate{margin-top:13px;border-top:1px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+  .debate:empty{display:none}
+  .debRow{font-size:12.5px;line-height:1.45}
+  .debLbl{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;margin-bottom:3px}
+  .deb-agree .debLbl{color:var(--good)} .deb-tension .debLbl{color:var(--warn)}
+  .debate ul{margin:0;padding-left:16px} .debate li{margin:3px 0;color:var(--txt)}
   /* ORION synthesis block */
   .orionSynth{margin-top:13px;background:rgba(110,168,254,.06);border:1px solid rgba(110,168,254,.25);border-radius:11px;padding:12px 13px}
   .synthHd{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);font-weight:700;margin-bottom:8px}
@@ -261,8 +269,9 @@
       <div class="verb" id="verbBlock"></div>
     </div>
     <div class="stage">
-      <div class="stageHd"><span class="stageNo">2</span> Council Deliberation — the disciplines reason together</div>
+      <div class="stageHd"><span class="stageNo">2</span> Council Deliberation — the disciplines reason together <span class="transp">open · not a black box</span></div>
       <div class="council" id="council"></div>
+      <div class="debate" id="debate"></div>
     </div>
     <div class="stage">
       <div class="stageHd"><span class="stageNo">3</span> ORION&#39;s Judgment <span class="enduring">enduring artifact</span></div>
@@ -704,6 +713,28 @@ function councilPerspectives(ev){
   list.push({name:'Context Intelligence',src:'Marketing knowledge',stance:'neu',text:knowledgeFor(ev)});
   return list;
 }
+// the debate, in the open — where the witnesses agree, where they conflict, and where one is silent
+function councilDebate(ev){
+  const members=councilPerspectives(ev), disc=m=>m.name.split(' ')[0], nm=a=>joinList(a.map(disc));
+  const voting=members.filter(m=>m.stance!=='neu');
+  const pos=voting.filter(m=>m.stance==='pos'), neg=voting.filter(m=>m.stance==='neg'), na=voting.filter(m=>m.stance==='na');
+  const consensus=[], tensions=[];
+  if(pos.length>=2) consensus.push(`${nm(pos)} agree the work is strong.`);
+  if(neg.length>=2) consensus.push(`${nm(neg)} agree it's underperforming.`);
+  if(pos.length&&neg.length) tensions.push(`${nm(pos)} read positive while ${nm(neg)} read negative — the council is split.`);
+  const v=(conn.creative&&synth('creative',ADS[ad]).avail)?qualVerdict(ad):null;
+  if(v&&v.tag==='Conflicting') tensions.push(`Consumer verbatims conflict with the quantitative creative read — attention isn't affinity.`);
+  else if(v&&v.tag==='Polarizing') tensions.push(`Consumer response is polarized — strong reactions both ways.`);
+  if(na.length) tensions.push(`${nm(na)} ${na.length>1?'are':'is'} silent — no evidence. ORION won't let the other witnesses answer ${na.length>1?'their':'its'} question.`);
+  if(!consensus.length&&!tensions.length) consensus.push('The available witnesses broadly align.');
+  return {consensus,tensions};
+}
+function renderDebate(ev){
+  const d=councilDebate(ev); let h='';
+  if(d.consensus.length) h+=`<div class="debRow deb-agree"><span class="debLbl">Where they agree</span><ul>${d.consensus.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  if(d.tensions.length) h+=`<div class="debRow deb-tension"><span class="debLbl">Where they diverge — the open disputes</span><ul>${d.tensions.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  document.getElementById('debate').innerHTML=h;
+}
 
 // ---------- compute / render ----------
 // explicit evidence-state framework: Available / Weak / Unavailable (about the evidence, not the verdict)
@@ -748,6 +779,7 @@ function renderAdvisor(ev){
     document.getElementById('recHeadline').textContent='Connect evidence to begin.';
     evl.innerHTML='<li class="neu">No evidence connected yet.</li>';
     council.innerHTML='<div class="cmText" style="color:var(--dim)">Connect a source, or let ORION reason from the shared knowledge layer.</div>';
+    document.getElementById('debate').innerHTML='';
     document.getElementById('verbBlock').innerHTML='';document.getElementById('agreeBlock').innerHTML='';
     document.getElementById('jRead').innerHTML='';document.getElementById('jCrux').innerHTML='';document.getElementById('jGaps').innerHTML='';
     document.getElementById('jInsight').style.display='none';
@@ -770,6 +802,7 @@ function renderAdvisor(ev){
     `<div class="cmember"><span class="cmDot" style="background:${dotFor(m.stance)}"></span>
        <div class="cmBody"><span class="cmName">${m.name}</span><span class="cmSrc">${m.src}</span>
        <div class="cmText">${m.text}</div></div></div>`).join('');
+  renderDebate(ev);
   // STAGE 3 — ORION's Judgment (the enduring artifact)
   const v=conn.creative&&synth('creative',ADS[ad]).avail?qualVerdict(ad):null;
   document.getElementById('agreeBlock').innerHTML = v
@@ -901,6 +934,12 @@ function askConsultant(qRaw){
     const dir=/(worse|drop|lower|reduce|weak|decline|down|fail)/.test(q)?'weak':'strong', wi=whatIf(dk,dir), verb=dir==='strong'?'improved to Strong':'fell to Weak';
     if(wi.base.rec!==wi.newRec)return `If <b>${CATS[dk].name}</b> ${verb} on <b>${ADS[ad].short}</b>, the recommendation would shift from <b>${ACTION[wi.base.rec].label}</b> to <b>${ACTION[wi.newRec].label}</b>.<span class="botnote">Computed by re-running the engine — not estimated.</span>`;
     return `If <b>${CATS[dk].name}</b> ${verb} on <b>${ADS[ad].short}</b>, the call would stay <b>${ACTION[wi.base.rec].label}</b>.<span class="botnote">Computed by re-running the engine.</span>`;
+  }
+  if(/(debate|the council|consensus|witness|diverge|split|where.*(agree|disagree)|how did (you|orion) (decide|weigh))/.test(q)){
+    const d=councilDebate(ev); let out=`The council debate on <b>${ADS[ad].short}</b> — in the open:`;
+    if(d.consensus.length) out+=`<br><b>Where they agree:</b><ul class="botul">${d.consensus.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+    if(d.tensions.length) out+=`<b>Where they diverge:</b><ul class="botul">${d.tensions.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+    return out;
   }
   if(/(conflict|verbatim|consumer|qualitative|what.*(say|said|think)|sentiment|emotion|disagree|agree|polariz)/.test(q)){
     if(!conn.creative||!synth('creative',ADS[ad]).avail)return `No creative evidence is connected for ${ADS[ad].short}, so I have no verbatims to read.`;
